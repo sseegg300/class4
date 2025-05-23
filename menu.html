@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>랜덤 페르소나 카드 게임</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 50px;
+      background-color: #f8f9fa;
+    }
+    .grid {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .card {
+      width: 200px;
+      height: 150px;
+      border-radius: 16px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      padding: 10px;
+      text-align: center;
+    }
+    .card:hover {
+      transform: scale(1.05);
+    }
+    .card.revealed {
+      background-color: #4CAF50;
+      color: white;
+    }
+    button {
+      margin-top: 30px;
+      padding: 10px 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      background-color: #007BFF;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎴 랜덤 페르소나 카드 게임</h1>
+  <div class="grid">
+    <div class="card" id="name">이름</div>
+    <div class="card" id="age">나이</div>
+    <div class="card" id="job">직업 또는 선호직업</div>
+    <div class="card" id="personality">성격</div>
+    <div class="card" id="food">식습관</div>
+  </div>
+  <button onclick="resetCards()">다시 하기</button>
+
+  <script>
+    const names = ["아이유", "지민", "정국", "제니", "뷔", "수지", "차은우", "장원영", "지수", "박보검",
+                    "이승기", "태연", "하니", "박서준", "신동엽", "신세경", "강다니엘", "한소희", "손흥민", "이도현"];
+
+    const ages = ["50살", "12살", "13살", "14살", "15살", "17살", "18살", "20살", "22살", "24살",
+                  "25살", "27살", "28살", "30살", "32살", "35살", "38살", "40살", "42살", "45살"];
+
+    const jobs = [
+      "초등학생", "중학생", "고등학생", "대학생",
+      "회사원", "광고기획자", "유튜버", "데이터분석가", "카페 바리스타",
+      "셰프", "사진 작가", "만화가", "인플루언서", "운동선수",
+      "선생님", "앱 개발자", "수의사", "웹툰 기획자", "연극배우"
+    ];
+
+    const personalities = [
+      "활발함, 장난기 많음, 창의적임", "차분함, 공감력 있음, 신중함",
+      "외향적임, 리더십 있음, 밝음", "조용함, 사려 깊음, 부끄러움 많음",
+      "도전적임, 열정적임, 독립적임", "분석적임, 논리적임, 침착함",
+      "사교적임, 웃음 많음, 긍정적임", "감성적임, 상상력 풍부함, 감정이입 잘함",
+      "계획적임, 정리 잘함, 꼼꼼함", "느긋함, 따뜻함, 이해심 많음"
+    ];
+
+    const foods = [
+      "매운 것을 못 먹음, 단 음식을 좋아함",
+      "자극적인 음식을 좋아함",
+      "짠 음식을 자주 먹음",
+      "건강식을 선호함, 물을 자주 마심",
+      "면 음식을 좋아함.",
+      "단 것을 좋아함. 간식 위주로 식사함",
+      "채식을 선호함, 비건에 관심 있음",
+      "매운 음식과 튀김류를 즐김",
+      "향이 있는 음식을 싫어함.",
+      "고기를 좋아함.",
+      "아침을 거르는 편임. 채소를 싫어함",
+      "규칙적인 식사를 중요하게 생각함",
+      "새로운 음식에 도전함",
+      "집밥을 선호함, 전통적인 식단을 따름",
+      "식사를 빨리 하는 편임, 천천히 씹지 않음",
+      "식사 속도가 느림, 소식함",
+      "단백질 위주의 식단을 선호함",
+      "탄수화물을 좋아하지만 다이어트를 위해 노력함",
+      "디저트를 꼭 챙겨 먹음",
+      "음식을 나눠 먹는 것을 선호함"
+    ];
+
+    const cardMap = {
+      name: names,
+      age: ages,
+      job: jobs,
+      personality: personalities,
+      food: foods
+    };
+
+    const revealed = {
+      name: false,
+      age: false,
+      job: false,
+      personality: false,
+      food: false
+    };
+
+    function pickRandom(array) {
+      return array[Math.floor(Math.random() * array.length)];
+    }
+
+    Object.keys(cardMap).forEach(key => {
+      const card = document.getElementById(key);
+      card.addEventListener("click", () => {
+        if (!revealed[key]) {
+          card.textContent = pickRandom(cardMap[key]);
+          card.classList.add("revealed");
+          revealed[key] = true;
+        }
+      });
+    });
+
+    function resetCards() {
+      Object.keys(cardMap).forEach(key => {
+        const card = document.getElementById(key);
+        card.textContent = key === "name" ? "이름" :
+                            key === "age" ? "나이" :
+                            key === "job" ? "직업 또는 선호직업" :
+                            key === "personality" ? "성격" :
+                            "식습관";
+        card.classList.remove("revealed");
+        revealed[key] = false;
+      });
+    }
+  </script>
+
+</body>
+</html>
