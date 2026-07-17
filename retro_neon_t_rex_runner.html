@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T-Rex Runner: Synthwave Retro Arcade</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at center, #1b113a 0%, #080315 100%);
+        }
+        .font-arcade {
+            font-family: 'Press Start 2P', monospace;
+        }
+        .font-mono-tech {
+            font-family: 'Share Tech Mono', monospace;
+        }
+        .neon-border {
+            box-shadow: 0 0 15px rgba(255, 0, 128, 0.4), inset 0 0 15px rgba(255, 0, 128, 0.2);
+            border: 2px solid #ff007f;
+        }
+        .neon-glow-cyan {
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.6);
+        }
+        .neon-text-pink {
+            text-shadow: 0 0 8px rgba(255, 0, 128, 0.8), 0 0 20px rgba(255, 0, 128, 0.4);
+        }
+        .neon-text-cyan {
+            text-shadow: 0 0 8px rgba(0, 242, 254, 0.8), 0 0 20px rgba(0, 242, 254, 0.4);
+        }
+        /* Hide all default scrollbars for a clean arcade look */
+        ::-webkit-scrollbar {
+            display: none;
+            width: 0px;
+            height: 0px;
+        }
+        .no-scrollbar {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+            width: 0px;
+            height: 0px;
+        }
+        /* Touch virtual button active state */
+        .btn-active:active {
+            transform: scale(0.92);
+            filter: brightness(1.2);
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .animate-shake {
+            animation: shake 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-100 flex flex-col items-center justify-between p-3 md:p-6 overflow-x-hidden overflow-y-hidden select-none">
+
+    <!-- Top Navigation / Stats / Settings Bar -->
+    <header class="w-full max-w-4xl flex flex-col md:flex-row gap-3 justify-between items-center bg-black/40 backdrop-blur-md rounded-2xl p-4 border border-indigo-500/20 mb-3">
+        <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                    <img class="w-6 h-6 object-contain animate-pulse" src="https://cdn-icons-png.flaticon.com/512/4574/4574325.png" alt="Logo">
+                </div>
+                <div>
+                    <h1 class="text-sm md:text-lg font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 font-mono-tech">
+                        NEON RUNNER
+                    </h1>
+                    <p class="text-[10px] text-slate-400 font-arcade tracking-tight">FREE MOVE EDITION</p>
+                </div>
+            </div>
+            
+            <!-- Compact sound toggles directly in header -->
+            <div class="flex items-center space-x-1.5 ml-4">
+                <button onclick="toggleAudio()" id="btn-audio" class="flex items-center justify-center p-2 rounded-lg bg-slate-800/80 border border-slate-700/60 hover:bg-slate-700 transition" title="Toggle Sound FX">
+                    <img id="audio-icon" class="w-4 h-4 object-contain transition-all duration-200" src="https://cdn-icons-png.flaticon.com/512/4574/4574325.png" style="filter: invert(34%) sepia(87%) saturate(5412%) hue-rotate(318deg) brightness(97%) contrast(109%) drop-shadow(0 0 3px rgba(255, 0, 127, 0.8));" alt="SFX">
+                </button>
+                <button onclick="toggleBGM()" id="btn-bgm" class="flex items-center justify-center p-2 rounded-lg bg-slate-800/80 border border-slate-700/60 hover:bg-slate-700 transition" title="Toggle BGM">
+                    <svg id="bgm-icon" class="w-4 h-4 text-slate-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3V3z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Score and Wallet info -->
+        <div class="flex items-center justify-between md:justify-end space-x-6 w-full md:w-auto border-t border-indigo-500/10 pt-2.5 md:pt-0 md:border-t-0">
+            <div class="text-right">
+                <p class="text-[9px] text-pink-400 font-arcade">COINS</p>
+                <div class="flex items-center justify-end space-x-1">
+                    <svg class="w-4 h-4 text-amber-400 animate-bounce" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                    <span id="coin-counter" class="text-base font-bold font-mono-tech text-yellow-300">0</span>
+                </div>
+            </div>
+            <div class="h-8 w-px bg-slate-700/60"></div>
+            <div class="text-right">
+                <p class="text-[9px] text-cyan-400 font-arcade">HIGH SCORE</p>
+                <p id="top-score" class="text-base font-bold font-mono-tech text-cyan-300">00000</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Interactive Area -->
+    <main class="w-full max-w-4xl flex flex-col items-center justify-center flex-grow">
+        <!-- Canvas Container -->
+        <div id="game-container" class="relative w-full max-w-[800px] overflow-hidden rounded-2xl neon-border bg-slate-950/80 aspect-[16/5] md:aspect-[8/2.5]">
+            <canvas id="gameCanvas" class="w-full h-full block"></canvas>
+            
+            <!-- Overlay HUD (Starts Game / Paused / Game Over) -->
+            <div id="overlay" class="absolute inset-0 bg-slate-950/90 flex flex-col justify-center items-center text-center p-6 transition-all duration-300">
+                <div id="overlay-glow-logo" class="mb-4">
+                    <svg class="w-12 h-12 text-pink-500 animate-bounce" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+                    </svg>
+                </div>
+                <h2 id="overlayText" class="text-2xl md:text-3xl font-arcade tracking-wider text-pink-500 neon-text-pink mb-4">
+                    FREE MOVE DINO
+                </h2>
+                <p id="overlaySubtext" class="text-[10px] text-cyan-300 font-arcade max-w-md leading-relaxed animate-pulse">
+                    PRESS SPACEBAR OR TAP SCREEN TO RUN
+                </p>
+                
+                <!-- Compact instruction badge inside the overlay (Horizontal, Single Row) -->
+                <div class="mt-4 flex justify-center items-center gap-2 text-[8px] text-slate-400 font-mono-tech max-w-full bg-slate-900/85 px-3 py-1.5 rounded-lg border border-slate-800/80 whitespace-nowrap overflow-x-auto">
+                    <span class="px-1 py-0.5 bg-slate-800 rounded">←/→ Move</span>
+                    <span class="h-3 w-px bg-slate-700"></span>
+                    <span class="px-1 py-0.5 bg-slate-800 rounded">↑ Jump</span>
+                    <span class="h-3 w-px bg-slate-700"></span>
+                    <span class="px-1 py-0.5 bg-slate-800 rounded">↓ Duck</span>
+                    <span class="h-3 w-px bg-slate-700"></span>
+                    <span class="px-1 py-0.5 bg-slate-800 rounded">Double Space: High Jump</span>
+                </div>
+            </div>
+
+            <!-- Shield Active Indicator -->
+            <div id="hud-alerts" class="absolute top-3 left-4 flex flex-col gap-2 pointer-events-none">
+                <div id="shield-indicator" class="hidden flex items-center space-x-2 bg-cyan-950/80 border border-cyan-400 px-2 py-1 rounded-md text-cyan-300 text-[10px] font-arcade animate-pulse">
+                    <svg class="w-3.5 h-3.5 text-cyan-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M2.166 4.9c0-.475.382-.86.854-.86h13.96c.472 0 .854.385.854.86v4.613c0 5.178-3.415 9.144-7.464 10.364a1.06 1.06 0 01-.74 0c-4.05-1.22-7.464-5.186-7.464-10.364V4.9z" clip-rule="evenodd" />
+                    </svg>
+                    <span>SHIELD ACTIVE</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Keyboard Instruction Legend (Standalone horizontal bar to prevent overlap with Virtual Gamepad) -->
+    <div class="hidden md:flex w-full max-w-4xl items-center justify-center gap-3 bg-slate-900/40 border border-slate-800/80 rounded-xl px-4 py-2.5 mt-3 text-[10px] text-slate-400 font-mono-tech tracking-wide shadow-md">
+        <span class="text-indigo-400 font-bold flex items-center shrink-0">
+            <svg class="w-4 h-4 mr-1.5 text-pink-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M3 5a2 2 0 012-2h10a2 2 0 012 2v8a2 2 0 01-2 2h-2.22l-.111.89c.175.14.373.25.59.327l.38.134a1 1 0 11-.66 1.898l-.38-.134a3 3 0 01-1.782-2.315H8.182a3 3 0 01-1.783 2.314l-.38.135a1 1 0 11-.66-1.897l.38-.135c.217-.076.415-.187.59-.327L6.22 15H4a2 2 0 01-2-2V5zm2-1h10a1 1 0 011 1v8a1 1 0 01-1 1H5a1 1 0 01-1-1V5a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            KEYBOARD:
+        </span>
+        <span class="bg-slate-950/60 px-2 py-0.5 rounded border border-slate-800/80 text-slate-300">Space / ↑</span> <span class="text-pink-400 font-semibold">Jump</span>
+        <span class="text-slate-700">|</span>
+        <span class="bg-slate-950/60 px-2 py-0.5 rounded border border-slate-800/80 text-slate-300">↓</span> <span class="text-pink-400 font-semibold">Duck</span>
+        <span class="text-slate-700">|</span>
+        <span class="bg-slate-950/60 px-2 py-0.5 rounded border border-slate-800/80 text-slate-300">← / →</span> <span class="text-cyan-400 font-semibold">Move Left/Right</span>
+        <span class="text-slate-700">|</span>
+        <span class="bg-slate-950/60 px-2 py-0.5 rounded border border-slate-800/80 text-slate-300">Double Space</span> <span class="text-yellow-400 font-semibold">High Jump</span>
+    </div>
+
+    <!-- Handheld Simulation Controller for Touch Screens (Pure Interactive Gamepad) -->
+    <div class="w-full max-w-4xl bg-slate-900/40 border border-slate-800/80 rounded-2xl p-4 mt-3 flex items-center justify-between gap-4 shadow-xl">
+        <!-- Left Side D-pad Controls -->
+        <div class="flex items-center gap-1.5 shrink-0">
+            <button id="touch-left" class="btn-active w-12 h-12 bg-slate-800/80 rounded-xl flex items-center justify-center border border-indigo-500/30 text-indigo-400 text-lg shadow-md transition-colors hover:bg-slate-700">
+                ◀
+            </button>
+            <div class="flex flex-col gap-1.5">
+                <button id="touch-up" class="btn-active w-12 h-12 bg-indigo-600/90 rounded-xl flex items-center justify-center border border-indigo-400 text-white text-lg shadow-lg shadow-indigo-600/20 transition-colors hover:bg-indigo-500">
+                    ▲
+                </button>
+                <button id="touch-down" class="btn-active w-12 h-12 bg-slate-800/80 rounded-xl flex items-center justify-center border border-indigo-500/30 text-indigo-400 text-lg shadow-md transition-colors hover:bg-slate-700">
+                    ▼
+                </button>
+            </div>
+            <button id="touch-right" class="btn-active w-12 h-12 bg-slate-800/80 rounded-xl flex items-center justify-center border border-indigo-500/30 text-indigo-400 text-lg shadow-md transition-colors hover:bg-slate-700">
+                ▶
+            </button>
+        </div>
+
+        <!-- Right Action Buttons -->
+        <div class="flex items-center gap-3 shrink-0">
+            <button id="touch-jump" class="btn-active px-6 py-4 bg-gradient-to-tr from-pink-600 to-rose-500 rounded-2xl flex flex-col items-center justify-center border-b-4 border-pink-800 text-white shadow-lg font-arcade text-[10px] tracking-wider uppercase">
+                ▲▲ JUMP
+            </button>
+            <button id="touch-start" class="btn-active px-5 py-4 bg-gradient-to-tr from-cyan-600 to-blue-500 rounded-2xl flex flex-col items-center justify-center border-b-4 border-cyan-800 text-white shadow-lg font-arcade text-[10px] tracking-wider uppercase">
+                START
+            </button>
+        </div>
+    </div>
+
+    <!-- Retro Bottom Footer -->
+    <footer class="w-full text-center text-[10px] text-slate-500 tracking-wider font-mono-tech mt-3">
+        T-REX RUNNER ARCADES © 2026 • PROCEDURAL SYNTH AUDIO ACTIVE
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const overlay = document.getElementById('overlay');
+        const overlayText = document.getElementById('overlayText');
+        const overlaySubtext = document.getElementById('overlaySubtext');
+        const coinCounter = document.getElementById('coin-counter');
+        const topScoreText = document.getElementById('top-score');
+        const shieldIndicator = document.getElementById('shield-indicator');
+
+        // Audio Management via Native Web Audio API Synthesizer (Zero External Assets Required)
+        let audioContext = null;
+        let sfxEnabled = true;
+        let bgmEnabled = false;
+        let bgmInterval = null;
+
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // Synth Retro Sound Generator
+        const SoundFX = {
+            play(type) {
+                if (!sfxEnabled) return;
+                initAudio();
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                
+                const now = audioContext.currentTime;
+
+                if (type === 'jump') {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(650, now + 0.15);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.16);
+                } else if (type === 'duck') {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.linearRampToValueAtTime(100, now + 0.1);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.11);
+                } else if (type === 'coin') {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, now);
+                    osc.frequency.setValueAtTime(1174, now + 0.08);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.setValueAtTime(0.08, now + 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.22);
+                } else if (type === 'scoreMilestone') {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.setValueAtTime(0.08, now + 0.08);
+                    gain.gain.setValueAtTime(0.08, now + 0.16);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.36);
+                } else if (type === 'shield') {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.3);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.36);
+                } else if (type === 'hit') {
+                    const osc = audioContext.createOscillator();
+                    const oscNoise = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    oscNoise.connect(gain);
+                    gain.connect(audioContext.destination);
+                    
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(250, now);
+                    osc.frequency.linearRampToValueAtTime(30, now + 0.45);
+                    
+                    oscNoise.type = 'triangle';
+                    oscNoise.frequency.setValueAtTime(180, now);
+                    oscNoise.frequency.linearRampToValueAtTime(20, now + 0.45);
+
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                    
+                    osc.start(now);
+                    oscNoise.start(now);
+                    osc.stop(now + 0.5);
+                    oscNoise.stop(now + 0.5);
+                }
+            }
+        };
+
+        // Synthesized retro bass music step sequencer
+        let bgmStep = 0;
+        const bgmNotes = [110, 110, 130, 110, 165, 165, 146, 130];
+        
+        function playBGMStep() {
+            if (!bgmEnabled || !sfxEnabled) return;
+            initAudio();
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            const now = audioContext.currentTime;
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(bgmNotes[bgmStep % bgmNotes.length], now);
+            gain.gain.setValueAtTime(0.05, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+            
+            osc.start(now);
+            osc.stop(now + 0.2);
+            bgmStep++;
+        }
+
+        function toggleAudio() {
+            sfxEnabled = !sfxEnabled;
+            const icon = document.getElementById('audio-icon');
+            if (sfxEnabled) {
+                // Gorgeous neon pink glow filter matching the theme
+                icon.style.filter = "invert(34%) sepia(87%) saturate(5412%) hue-rotate(318deg) brightness(97%) contrast(109%) drop-shadow(0 0 3px rgba(255, 0, 127, 0.8))";
+            } else {
+                // Low opacity grayscale when muted
+                icon.style.filter = "grayscale(1) opacity(0.35)";
+            }
+        }
+
+        function toggleBGM() {
+            bgmEnabled = !bgmEnabled;
+            const icon = document.getElementById('bgm-icon');
+            if (bgmEnabled) {
+                icon.className.baseVal = "w-4 h-4 text-cyan-400 animate-spin";
+                bgmInterval = setInterval(playBGMStep, 250);
+            } else {
+                icon.className.baseVal = "w-4 h-4 text-slate-500";
+                if (bgmInterval) {
+                    clearInterval(bgmInterval);
+                    bgmInterval = null;
+                }
+            }
+        }
+
+        // Running stats
+        let localCoins = parseInt(localStorage.getItem('neon_coins') || '0');
+        let localHighScore = parseInt(localStorage.getItem('neon_highscore') || '0');
+
+        coinCounter.innerText = localCoins;
+        topScoreText.innerText = String(localHighScore).padStart(5, '0');
+
+        // Dinosaur Visual Core Color Palette (Fixed Gorgeous Cyberpunk Pink layout)
+        const DINO_COLORS = {
+            body: '#ff007f', 
+            accent: '#00f2fe', 
+            legs: '#fff700', 
+            glow: 'rgba(255, 0, 127, 0.6)'
+        };
+
+        // Game Configuration constants
+        const CONFIG = {
+            gravity: 0.55,
+            jumpForce: -11.5,
+            duckGravity: 1.3,
+            moveSpeed: 5.5,
+            startSpeed: 5.5,
+            maxSpeed: 13,
+            speedAcceleration: 0.0007,
+            spawnInterval: { min: 80, max: 150 }
+        };
+
+        let gameState = 'START';
+        let score = 0;
+        let lastScoreMilestone = 0;
+        let gameSpeed = CONFIG.startSpeed;
+        let nextSpawnTime = 0;
+        let frameCount = 0;
+        let obstacles = [];
+        let collectibles = [];
+        let particles = [];
+        let keys = {};
+
+        // Responsive Sizing handler
+        function resizeCanvas() {
+            canvas.width = 800;
+            canvas.height = 250;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Particle system for run smoke, double-jump rings, and coin collection
+        class Particle {
+            constructor(x, y, color, speedX, speedY, life, size = 4, type = 'pixel') {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.vx = speedX;
+                this.vy = speedY;
+                this.life = life;
+                this.maxLife = life;
+                this.size = size;
+                this.type = type;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life--;
+                if (this.type === 'dust') {
+                    this.vy -= 0.05;
+                    this.size *= 0.95;
+                }
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.life / this.maxLife;
+                ctx.fillStyle = this.color;
+                
+                if (this.type === 'pixel' || this.type === 'dust') {
+                    ctx.fillRect(this.x, this.y, this.size, this.size);
+                } else if (this.type === 'sparkle') {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        // Parallax Stars and Retro Wireframe Sun
+        const background = {
+            stars: [],
+            gridLines: [],
+
+            init() {
+                this.stars = [];
+                for (let i = 0; i < 40; i++) {
+                    this.stars.push({
+                        x: Math.random() * 800,
+                        y: Math.random() * 150,
+                        size: Math.random() * 2 + 0.5,
+                        speed: Math.random() * 0.1 + 0.05
+                    });
+                }
+            },
+
+            update() {
+                this.stars.forEach(star => {
+                    star.x -= star.speed * (gameSpeed * 0.5);
+                    if (star.x < 0) {
+                        star.x = 800;
+                        star.y = Math.random() * 150;
+                    }
+                });
+            },
+
+            draw() {
+                let skyGrad = ctx.createLinearGradient(0, 0, 0, 240);
+                skyGrad.addColorStop(0, '#090518');
+                skyGrad.addColorStop(0.5, '#1b0933');
+                skyGrad.addColorStop(1, '#2c0c4a');
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, 800, 240);
+
+                // Glow Synth Sun
+                const sunGrad = ctx.createLinearGradient(0, 50, 0, 160);
+                sunGrad.addColorStop(0, '#ff007f');
+                sunGrad.addColorStop(1, '#fff700');
+                ctx.save();
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#ff007f';
+                ctx.fillStyle = sunGrad;
+                ctx.beginPath();
+                ctx.arc(400, 120, 45, 0, Math.PI, true);
+                ctx.fill();
+                
+                ctx.fillStyle = '#090518';
+                for (let i = 120; i < 160; i += 8) {
+                    ctx.fillRect(350, i, 100, 3);
+                }
+                ctx.restore();
+
+                // Parallax Stars drawing
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                this.stars.forEach(star => {
+                    ctx.fillRect(star.x, star.y, star.size, star.size);
+                });
+
+                // Wireframe Grid Lines
+                ctx.strokeStyle = 'rgba(168, 85, 247, 0.25)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                for (let i = 0; i <= 800; i += 50) {
+                    ctx.moveTo(i, 240);
+                    ctx.lineTo(400 + (i - 400) * 0.1, 160);
+                }
+                for (let h = 160; h <= 240; h += 15) {
+                    ctx.moveTo(0, h);
+                    ctx.lineTo(800, h);
+                }
+                ctx.stroke();
+            }
+        };
+
+        background.init();
+
+        // Player Dinosaur logic mapping
+        const dino = {
+            x: 80,
+            y: 190,
+            width: 44,
+            height: 47,
+            normalHeight: 47,
+            duckHeight: 30,
+            vy: 0,
+            isJumping: false,
+            isDucking: false,
+            hasShield: false,
+            doubleJumpAvailable: true,
+            animFrame: 0,
+
+            update() {
+                // Horizontal left & right move bindings
+                if (keys['ArrowLeft'] || keys['KeyA'] || touchKeys['left']) {
+                    this.x -= CONFIG.moveSpeed;
+                    if (this.x < 15) this.x = 15;
+                    if (frameCount % 4 === 0) {
+                        particles.push(new Particle(this.x + this.width, this.y + this.height - 5, DINO_COLORS.accent, 1, -0.5, 15, 3, 'dust'));
+                    }
+                }
+                if (keys['ArrowRight'] || keys['KeyD'] || touchKeys['right']) {
+                    this.x += CONFIG.moveSpeed;
+                    if (this.x > 380) this.x = 380; // Bound at center boundary line
+                    if (frameCount % 4 === 0) {
+                        particles.push(new Particle(this.x, this.y + this.height - 5, DINO_COLORS.body, -1, -0.5, 15, 3, 'dust'));
+                    }
+                }
+
+                // Ducking modifier
+                if ((keys['ArrowDown'] || keys['KeyS'] || touchKeys['down']) && !this.isJumping) {
+                    if (!this.isDucking) {
+                        SoundFX.play('duck');
+                    }
+                    this.isDucking = true;
+                    this.height = this.duckHeight;
+                } else {
+                    this.isDucking = false;
+                    this.height = this.normalHeight;
+                }
+
+                // Vertical Jump action mapping
+                if ((keys['Space'] || keys['ArrowUp'] || keys['KeyW'] || touchKeys['jump']) && !this.isDucking) {
+                    if (!this.isJumping) {
+                        this.vy = CONFIG.jumpForce;
+                        this.isJumping = true;
+                        this.doubleJumpAvailable = true;
+                        SoundFX.play('jump');
+                        for (let i = 0; i < 5; i++) {
+                            particles.push(new Particle(this.x + 10, this.y + this.height, DINO_COLORS.body, (Math.random() - 0.5) * 3, -1, 20, 4, 'dust'));
+                        }
+                    } else if (this.doubleJumpAvailable && (keys['Space'] || keys['ArrowUp'] || keys['KeyW'] || touchKeys['jump'])) {
+                        // Double Jump mechanic
+                        this.vy = CONFIG.jumpForce * 0.9;
+                        this.doubleJumpAvailable = false;
+                        SoundFX.play('jump');
+                        for (let i = 0; i < 8; i++) {
+                            particles.push(new Particle(this.x + this.width / 2, this.y + this.height, DINO_COLORS.accent, (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, 15, 3, 'pixel'));
+                        }
+                    }
+                    keys['Space'] = false;
+                    keys['ArrowUp'] = false;
+                    keys['KeyW'] = false;
+                    touchKeys['jump'] = false;
+                }
+
+                const currentGravity = (this.isJumping && (keys['ArrowDown'] || keys['KeyS'] || touchKeys['down'])) ? CONFIG.duckGravity : CONFIG.gravity;
+                this.vy += currentGravity;
+                this.y += this.vy;
+
+                const groundY = canvas.height - this.height - 10;
+                if (this.y >= groundY) {
+                    this.y = groundY;
+                    this.vy = 0;
+                    this.isJumping = false;
+                }
+
+                if (!this.isJumping) {
+                    this.animFrame++;
+                }
+            },
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = DINO_COLORS.glow;
+
+                const leftFootDown = Math.floor(this.animFrame / 5) % 2 === 0;
+
+                if (!this.isDucking) {
+                    ctx.fillStyle = DINO_COLORS.body;
+                    ctx.fillRect(16, 0, 24, 16); // head
+                    ctx.fillRect(12, 4, 4, 12);
+                    ctx.fillRect(16, 16, 10, 8); // neck
+                    ctx.fillRect(4, 20, 20, 14); // body
+                    ctx.fillRect(0, 24, 4, 8);  // tail
+                    ctx.fillRect(8, 34, 12, 4);
+
+                    ctx.fillStyle = DINO_COLORS.accent;
+                    ctx.fillRect(16, 20, 6, 10);
+                    ctx.fillRect(24, 22, 4, 4); 
+                    ctx.fillStyle = DINO_COLORS.body;
+                    ctx.fillRect(26, 26, 4, 2);
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(22, 3, 4, 4);
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(24, 3, 2, 2);
+
+                    ctx.fillStyle = DINO_COLORS.legs;
+                    if (this.isJumping) {
+                        ctx.fillRect(10, 38, 4, 6);
+                        ctx.fillRect(18, 38, 4, 6);
+                    } else {
+                        if (leftFootDown) {
+                            ctx.fillRect(9, 38, 4, 6);
+                            ctx.fillRect(9, 44, 6, 3);
+                        } else {
+                            ctx.fillRect(9, 38, 4, 3);
+                        }
+                        if (!leftFootDown) {
+                            ctx.fillRect(17, 38, 4, 6);
+                            ctx.fillRect(17, 44, 6, 3);
+                        } else {
+                            ctx.fillRect(17, 38, 4, 3);
+                        }
+                    }
+                } else {
+                    ctx.fillStyle = DINO_COLORS.body;
+                    ctx.fillRect(0, 10, 32, 14);
+                    ctx.fillRect(4, 6, 24, 4);
+                    ctx.fillRect(28, 2, 22, 12); // duck head
+                    
+                    ctx.fillStyle = DINO_COLORS.accent;
+                    ctx.fillRect(12, 14, 16, 8);
+                    ctx.fillRect(24, 20, 4, 4);
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(38, 5, 4, 4);
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(40, 5, 2, 2);
+
+                    ctx.fillStyle = DINO_COLORS.legs;
+                    if (leftFootDown) {
+                        ctx.fillRect(10, 24, 4, 4);
+                        ctx.fillRect(10, 28, 6, 2);
+                    } else {
+                        ctx.fillRect(18, 24, 4, 4);
+                        ctx.fillRect(18, 28, 6, 2);
+                    }
+                }
+
+                if (this.hasShield) {
+                    ctx.strokeStyle = '#00f2fe';
+                    ctx.lineWidth = 2.5;
+                    ctx.shadowColor = '#00f2fe';
+                    ctx.shadowBlur = 12;
+                    ctx.beginPath();
+                    ctx.arc(this.width / 2, this.height / 2, Math.max(this.width, this.height) * 0.7, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            },
+
+            reset() {
+                this.x = 80;
+                this.y = canvas.height - this.normalHeight - 10;
+                this.vy = 0;
+                this.isJumping = false;
+                this.isDucking = false;
+                this.hasShield = false;
+                this.height = this.normalHeight;
+                this.animFrame = 0;
+                shieldIndicator.classList.add('hidden');
+            }
+        };
+
+        const COLORS = {
+            cactus: '#39ff14',
+            cactusFlower: '#ff007f',
+            birdBody: '#a855f7',
+            birdBeak: '#ff7700',
+            groundLine: '#4f46e5'
+        };
+
+        class Obstacle {
+            constructor() {
+                this.x = canvas.width;
+                this.type = Math.random() < 0.28 ? 'BIRD' : 'CACTUS';
+                this.animFrame = 0;
+                
+                if (this.type === 'CACTUS') {
+                    this.variant = Math.floor(Math.random() * 3); 
+                    if (this.variant === 0) {
+                        this.width = 16; this.height = 35;
+                    } else if (this.variant === 1) {
+                        this.width = 24; this.height = 46;
+                    } else {
+                        this.width = 45; this.height = 46;
+                    }
+                    this.y = canvas.height - this.height - 10;
+                } else {
+                    this.width = 34;
+                    this.height = 24;
+                    const heights = [135, 170, 195];
+                    this.y = heights[Math.floor(Math.random() * heights.length)];
+                }
+            }
+
+            update(speed) {
+                this.x -= speed;
+                this.animFrame++;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.shadowBlur = 8;
+
+                if (this.type === 'CACTUS') {
+                    ctx.shadowColor = COLORS.cactus;
+                    ctx.fillStyle = COLORS.cactus;
+                    if (this.variant === 0) {
+                        ctx.fillRect(6, 0, 4, this.height);
+                        ctx.fillRect(2, 10, 4, 4); ctx.fillRect(0, 12, 3, 10);
+                        ctx.fillRect(10, 14, 4, 4); ctx.fillRect(13, 16, 3, 8);
+                        
+                        ctx.fillStyle = COLORS.cactusFlower;
+                        ctx.fillRect(6, -4, 4, 4);
+                    } else if (this.variant === 1) {
+                        ctx.fillRect(9, 0, 6, this.height);
+                        ctx.fillRect(3, 12, 6, 6); ctx.fillRect(0, 16, 4, 15);
+                        ctx.fillRect(15, 18, 6, 6); ctx.fillRect(20, 22, 4, 12);
+                        
+                        ctx.fillStyle = COLORS.cactusFlower;
+                        ctx.fillRect(10, -4, 4, 4);
+                    } else {
+                        ctx.fillRect(6, 4, 5, this.height - 4);
+                        ctx.fillRect(0, 16, 4, 15); ctx.fillRect(3, 12, 4, 5);
+                        ctx.fillRect(22, 0, 6, this.height);
+                        ctx.fillRect(14, 14, 8, 5); ctx.fillRect(14, 18, 4, 15);
+                        ctx.fillRect(28, 18, 6, 5); ctx.fillRect(32, 22, 4, 12);
+                        ctx.fillRect(38, 10, 4, this.height - 10);
+                        
+                        ctx.fillStyle = COLORS.cactusFlower;
+                        ctx.fillRect(6, 0, 4, 4);
+                        ctx.fillRect(24, -4, 4, 4);
+                    }
+                } else {
+                    ctx.shadowColor = COLORS.birdBody;
+                    const wingUp = Math.floor(this.animFrame / 7) % 2 === 0;
+                    
+                    ctx.fillStyle = COLORS.birdBeak;
+                    ctx.fillRect(0, 8, 8, 4);
+                    
+                    ctx.fillStyle = COLORS.birdBody;
+                    ctx.fillRect(8, 8, 6, 6);
+                    ctx.fillRect(14, 4, 8, 6);
+                    ctx.fillRect(14, 10, 14, 6);
+                    ctx.fillRect(28, 12, 6, 3); 
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(15, 5, 2, 2);
+
+                    if (wingUp) {
+                        ctx.fillRect(16, 0, 4, 10);
+                        ctx.fillStyle = COLORS.birdBeak; 
+                        ctx.fillRect(12, 2, 4, 4);
+                    } else {
+                        ctx.fillRect(16, 16, 4, 8);
+                        ctx.fillStyle = COLORS.birdBeak;
+                        ctx.fillRect(18, 20, 4, 4);
+                    }
+                }
+                ctx.restore();
+            }
+        }
+
+        class Collectible {
+            constructor() {
+                this.x = canvas.width;
+                this.type = Math.random() < 0.15 ? 'SHIELD' : 'STAR';
+                this.width = 16;
+                this.height = 16;
+                this.y = 80 + Math.random() * 80;
+                this.animFrame = 0;
+            }
+
+            update(speed) {
+                this.x -= speed;
+                this.animFrame++;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.shadowBlur = 10;
+
+                const bob = Math.sin(this.animFrame * 0.1) * 3;
+
+                if (this.type === 'STAR') {
+                    ctx.shadowColor = '#fff700';
+                    ctx.fillStyle = '#fff700';
+                    ctx.beginPath();
+                    ctx.arc(8, 8 + bob, 7, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#000000';
+                    ctx.font = 'bold 9px monospace';
+                    ctx.fillText('$', 5, 11 + bob);
+                } else {
+                    ctx.shadowColor = '#00f2fe';
+                    ctx.fillStyle = '#00f2fe';
+                    ctx.beginPath();
+                    ctx.moveTo(8, 2 + bob);
+                    ctx.lineTo(14, 5 + bob);
+                    ctx.lineTo(14, 11 + bob);
+                    ctx.lineTo(8, 15 + bob);
+                    ctx.lineTo(2, 11 + bob);
+                    ctx.lineTo(2, 5 + bob);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+                ctx.restore();
+            }
+        }
+
+        const touchKeys = {
+            left: false,
+            right: false,
+            up: false,
+            down: false,
+            jump: false
+        };
+
+        window.addEventListener('keydown', (e) => {
+            const code = e.code;
+            keys[code] = true;
+
+            if (code === 'Space' || code === 'ArrowUp' || code === 'KeyW') {
+                if (gameState === 'START' || gameState === 'GAMEOVER') {
+                    initGame();
+                }
+            }
+
+            if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(code)) {
+                e.preventDefault();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+
+        function bindTouchControl(elementId, actionKey) {
+            const btn = document.getElementById(elementId);
+            if (!btn) return;
+
+            const handleStart = (e) => {
+                e.preventDefault();
+                touchKeys[actionKey] = true;
+                if (gameState === 'START' || gameState === 'GAMEOVER') {
+                    initGame();
+                }
+            };
+            const handleEnd = (e) => {
+                e.preventDefault();
+                touchKeys[actionKey] = false;
+            };
+
+            btn.addEventListener('touchstart', handleStart, {passive: false});
+            btn.addEventListener('touchend', handleEnd, {passive: false});
+            btn.addEventListener('mousedown', handleStart);
+            btn.addEventListener('mouseup', handleEnd);
+            btn.addEventListener('mouseleave', handleEnd);
+        }
+
+        bindTouchControl('touch-left', 'left');
+        bindTouchControl('touch-right', 'right');
+        bindTouchControl('touch-up', 'jump');
+        bindTouchControl('touch-down', 'down');
+        bindTouchControl('touch-jump', 'jump');
+
+        const touchStartBtn = document.getElementById('touch-start');
+        touchStartBtn.addEventListener('click', () => {
+            if (gameState === 'START' || gameState === 'GAMEOVER') {
+                initGame();
+            }
+        });
+
+        function initGame() {
+            obstacles = [];
+            collectibles = [];
+            particles = [];
+            score = 0;
+            lastScoreMilestone = 0;
+            gameSpeed = CONFIG.startSpeed;
+            frameCount = 0;
+            nextSpawnTime = 0;
+            dino.reset();
+            gameState = 'PLAYING';
+            overlay.classList.add('hidden');
+        }
+
+        function gameOver() {
+            gameState = 'GAMEOVER';
+            SoundFX.play('hit'); // Plays explosion audio
+
+            // Burst massive neon death particles
+            for (let i = 0; i < 35; i++) {
+                const color = i % 2 === 0 ? DINO_COLORS.body : DINO_COLORS.accent;
+                particles.push(new Particle(
+                    dino.x + dino.width / 2, 
+                    dino.y + dino.height / 2, 
+                    color, 
+                    (Math.random() - 0.5) * 8, 
+                    (Math.random() - 0.5) * 8, 
+                    40, 
+                    Math.random() * 5 + 2
+                ));
+            }
+
+            if (score > localHighScore) {
+                localHighScore = Math.floor(score);
+                localStorage.setItem('neon_highscore', localHighScore);
+                topScoreText.innerText = String(localHighScore).padStart(5, '0');
+            }
+            
+            localStorage.setItem('neon_coins', localCoins);
+            coinCounter.innerText = localCoins;
+
+            overlayText.innerText = 'GAME OVER';
+            overlaySubtext.innerText = 'TAP START / PRESS SPACEBAR TO RETRY';
+            overlay.classList.remove('hidden');
+        }
+
+        function checkCollision(rect1, rect2) {
+            return rect1.x < rect2.x + rect2.width &&
+                   rect1.x + rect1.width > rect2.x &&
+                   rect1.y < rect2.y + rect2.height &&
+                   rect1.y + rect1.height > rect2.y;
+        }
+
+        function drawGround() {
+            ctx.strokeStyle = COLORS.groundLine;
+            ctx.lineWidth = 4;
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = COLORS.groundLine;
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height - 10);
+            ctx.lineTo(canvas.width, canvas.height - 10);
+            ctx.stroke();
+            ctx.shadowBlur = 0; // reset
+            
+            ctx.fillStyle = 'rgba(255, 0, 127, 0.4)';
+            let speedOffset = (gameState === 'PLAYING') ? (score * 12) % 800 : 0;
+            for (let i = 0; i < 800; i += 60) {
+                let currentX = i - speedOffset;
+                if (currentX < 0) currentX += 800;
+                ctx.fillRect(currentX, canvas.height - 6, 6, 2);
+            }
+        }
+
+        // Main animation tick
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            background.update();
+            background.draw();
+            drawGround();
+
+            if (gameState === 'PLAYING') {
+                frameCount++;
+                score += 0.2;
+                
+                // Procedural milestone reward audio
+                let roundedScore = Math.floor(score);
+                if (roundedScore > 0 && roundedScore % 100 === 0 && roundedScore > lastScoreMilestone) {
+                    lastScoreMilestone = roundedScore;
+                    SoundFX.play('scoreMilestone'); 
+                    for (let p = 0; p < 10; p++) {
+                        particles.push(new Particle(200, 40, '#00f2fe', (Math.random() - 0.5) * 5, (Math.random() - 0.5) * 5, 20, 4, 'sparkle'));
+                    }
+                }
+
+                if (gameSpeed < CONFIG.maxSpeed) {
+                    gameSpeed += CONFIG.speedAcceleration;
+                }
+
+                dino.update();
+
+                if (frameCount >= nextSpawnTime) {
+                    if (Math.random() < 0.22) {
+                        collectibles.push(new Collectible());
+                    } else {
+                        obstacles.push(new Obstacle());
+                    }
+                    frameCount = 0;
+                    nextSpawnTime = CONFIG.spawnInterval.min + Math.random() * (CONFIG.spawnInterval.max - CONFIG.spawnInterval.min);
+                }
+
+                // Collectibles processing
+                for (let i = collectibles.length - 1; i >= 0; i--) {
+                    const item = collectibles[i];
+                    item.update(gameSpeed);
+                    item.draw();
+
+                    const dinoHitBox = { x: dino.x + 4, y: dino.y + 4, width: dino.width - 8, height: dino.height - 8 };
+                    if (checkCollision(dinoHitBox, item)) {
+                        if (item.type === 'STAR') {
+                            localCoins += 1;
+                            coinCounter.innerText = localCoins;
+                            SoundFX.play('coin'); 
+                            for (let p = 0; p < 8; p++) {
+                                particles.push(new Particle(item.x, item.y, '#fff700', (Math.random() - 0.5) * 4, (Math.random() - 0.5) * 4, 15, 3, 'sparkle'));
+                            }
+                        } else {
+                            dino.hasShield = true;
+                            shieldIndicator.classList.remove('hidden');
+                            SoundFX.play('shield');
+                        }
+                        collectibles.splice(i, 1);
+                        continue;
+                    }
+
+                    if (item.x + item.width < 0) {
+                        collectibles.splice(i, 1);
+                    }
+                }
+
+                // Obstacles processing
+                for (let i = obstacles.length - 1; i >= 0; i--) {
+                    const obs = obstacles[i];
+                    obs.update(gameSpeed);
+                    obs.draw();
+
+                    const dinoHitBox = {
+                        x: dino.x + 8,
+                        y: dino.y + 4,
+                        width: dino.isDucking ? dino.width - 4 : dino.width - 16,
+                        height: dino.height - 8
+                    };
+
+                    if (checkCollision(dinoHitBox, obs)) {
+                        if (dino.hasShield) {
+                            dino.hasShield = false;
+                            shieldIndicator.classList.add('hidden');
+                            SoundFX.play('hit');
+                            for (let p = 0; p < 15; p++) {
+                                particles.push(new Particle(obs.x, obs.y, '#00f2fe', (Math.random() - 0.5) * 6, (Math.random() - 0.5) * 6, 20, 3));
+                            }
+                            obstacles.splice(i, 1);
+                        } else {
+                            gameOver();
+                        }
+                    }
+
+                    if (obs.x + obs.width < 0) {
+                        obstacles.splice(i, 1);
+                    }
+                }
+
+                // Draw active score on HUD
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '12px "Press Start 2P"';
+                ctx.fillText(String(Math.floor(score)).padStart(5, '0'), 30, 40);
+
+            } else {
+                obstacles.forEach(obs => obs.draw());
+                collectibles.forEach(item => item.draw());
+            }
+
+            dino.draw();
+
+            // Run particles pipeline
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Start game loop
+        gameLoop();
+    </script>
+</body>
+</html>
