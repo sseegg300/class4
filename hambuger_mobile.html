@@ -22,6 +22,7 @@
   .shop{position:absolute;bottom:0;left:0;right:0;height:205px;background:linear-gradient(#ffe9c4,#d69557);border-top:7px solid #f7f0df}.shop:before{content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:46px;width:80%;height:94px;border-radius:18px 18px 0 0;background:repeating-linear-gradient(90deg,#fff 0 38px,#f25f5c 38px 76px);border:7px solid #814c2c}.counter{position:absolute;left:8%;right:8%;bottom:20px;height:62px;background:#74451f;border-radius:16px;border-top:12px solid #a76a38;box-shadow:0 8px 0 #503017}
   .build-zone{z-index:2;position:absolute;left:50%;bottom:72px;transform:translateX(-50%);width:min(370px,80%);height:420px;display:flex;flex-direction:column-reverse;align-items:center;justify-content:flex-start;pointer-events:none}.build-zone.shake{animation:shake .26s}@keyframes shake{25%{transform:translateX(calc(-50% - 7px))}75%{transform:translateX(calc(-50% + 7px))}}
   .plate{height:18px;width:280px;background:#e8f1f2;border:3px solid #9bb3b7;border-radius:50%;box-shadow:0 8px 0 #758e91;margin-top:2px;flex:0 0 auto}.built{position:relative;height:40px;width:230px;margin:-3px 0;filter:drop-shadow(0 4px 2px #0003);flex:0 0 auto;animation:drop .25s cubic-bezier(.2,1.5,.5,1)}@keyframes drop{from{transform:translateY(-130px) rotate(6deg);opacity:.2}}
+  .game-label{display:none}
   .message{z-index:5;position:absolute;top:18px;left:50%;transform:translateX(-50%) scale(.85);background:#31261de8;color:#fff;padding:9px 16px;border-radius:999px;font-weight:900;opacity:0;transition:.2s;white-space:nowrap}.message.show{opacity:1;transform:translateX(-50%) scale(1)}
   .ingredients{display:grid;grid-template-columns:1fr 1fr;gap:9px}.ingredient{border:0;border-radius:17px;background:#fff;padding:9px 7px;cursor:pointer;box-shadow:0 5px 0 #d9c9ad;transition:.12s;font-weight:900;color:#503821;touch-action:manipulation}.ingredient:hover{transform:translateY(-2px)}.ingredient:active{transform:translateY(4px);box-shadow:0 1px 0 #d9c9ad}.swatch{position:relative;display:block;height:31px;width:92%;margin:0 auto 6px;filter:drop-shadow(0 2px 1px #0002)}
 
@@ -51,66 +52,113 @@
     .game{min-height:520px}
     .hud{grid-template-columns:repeat(2,minmax(0,1fr))}
   }
+  /* Mobile single-screen play layout: target and build stay visible side by side. */
   @media(max-width:720px){
-    .app{padding:max(10px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
-    header{align-items:flex-start;gap:8px}
-    .brand{min-width:0}.brand>div:last-child{min-width:0}
-    h1{font-size:clamp(1.35rem,7vw,1.85rem)}
+    html,body{width:100%;height:100%;overflow:hidden}
+    body{min-height:100svh;min-height:100dvh}
+    .app{
+      width:100%;height:100svh;height:100dvh;margin:0;
+      display:grid;grid-template-rows:auto auto minmax(0,1fr);
+      padding:max(5px,env(safe-area-inset-top)) max(6px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));
+      overflow:hidden
+    }
+    header{align-items:center;gap:5px;margin-bottom:4px;min-height:34px}
+    .brand{min-width:0;gap:4px}.brand>div:last-child{min-width:0}
+    h1{font-size:clamp(1.02rem,5.2vw,1.32rem);white-space:nowrap}
     .subtitle{display:none}
-    .logo{width:46px;height:46px;transform:scale(.8);transform-origin:left top;flex:0 0 46px}
-    .top-actions{flex-direction:row;gap:6px;flex:0 0 auto}
-    .icon-btn{padding:8px 9px;min-height:42px;font-size:.86rem}
-    main{display:flex;flex-direction:column;gap:10px}
-    .panel{border-radius:20px;padding:14px}
-    .left{order:1}.game{order:2}.right{order:3}
-    .left .order-card{display:block}
-    .order-stack{min-height:150px}
-    .game{min-height:clamp(430px,68dvh,520px)}
-    .build-zone{width:min(350px,92%);height:380px;bottom:72px}
-    .plate{width:min(270px,86vw)}
-    .built{width:min(230px,75vw)}
-    .hud{gap:7px;margin-bottom:10px}
-    .hud .stat{padding:8px 10px;border-radius:14px}
-    .stat strong{font-size:1.2rem}
-    .ingredients{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-    .ingredient{font-size:.78rem;min-height:72px;padding:8px 4px}
-    .swatch{height:20px}
-    .action{min-height:46px}
-    .help{justify-content:center;gap:6px 10px;font-size:clamp(.72rem,3.1vw,.82rem);padding-inline:2px}
-    .help-item{flex:0 0 auto}
-    .key{padding:1px 4px}
-    .modal{padding:22px 16px;border-radius:24px}
-    .difficulty{flex-wrap:wrap;margin:14px 0}
+    .logo{display:none}
+    .top-actions{flex-direction:row;gap:3px;flex:0 0 auto}
+    .icon-btn{padding:5px 6px;min-height:30px;border-radius:9px;font-size:.65rem;box-shadow:0 2px 6px #8f4c1920}
+
+    .hud{grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;margin-bottom:4px}
+    .hud .stat{min-width:0;padding:4px 2px;border-radius:9px;text-align:center;border-width:1px;box-shadow:0 2px 6px #8f4c1918}
+    .stat b{font-size:.52rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .stat strong{display:inline;font-size:.82rem;line-height:1.05}
+
+    main{
+      min-height:0;height:100%;overflow:hidden;
+      display:grid;
+      grid-template-columns:minmax(118px,44%) minmax(0,56%);
+      grid-template-rows:minmax(0,1fr) auto;
+      grid-template-areas:"order game" "tools tools";
+      gap:5px;align-items:stretch
+    }
+    .panel{min-width:0;min-height:0;border-radius:14px;padding:5px;border-width:2px;box-shadow:0 4px 12px rgba(75,46,18,.13);overflow:hidden}
+    .left{grid-area:order;display:flex;flex-direction:column}
+    .game{grid-area:game;min-height:0;height:auto}
+    .right{grid-area:tools;padding:5px}
+    .panel h2{font-size:.65rem;margin:0 0 3px;text-align:center;white-space:nowrap}
+
+    .left .order-card{display:flex;height:100%;min-height:0;flex:1;flex-direction:column;align-items:stretch;justify-content:center;gap:0;padding:4px;border-radius:10px}
+    .order-name{font-size:.66rem;line-height:1.15;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .order-stack{min-height:0;height:100%;max-height:none;flex:1;justify-content:center;overflow:hidden}
+    .mini{width:min(112px,32vw);height:18px;margin:-1px 0;filter:drop-shadow(0 1px 1px #0002)}
+    .mini.food.top-bun{height:21px}.mini.food.bottom-bun{height:17px}.mini.food.lettuce{height:15px}.mini.food.patty{height:19px}.mini.food.cheese{height:15px}.mini.food.tomato{height:16px}
+    .order-tip{display:none}
+
+    .game-label{display:block;z-index:6;position:absolute;top:4px;left:5px;padding:2px 5px;border-radius:999px;background:#fffbe9e8;color:#65482d;font-size:.58rem;font-weight:1000}
+    .game{background:linear-gradient(#c8efff 0 57%,#bfe28c 57% 65%,#f5d08a 65%)}
+    .shop{height:76px;border-top-width:3px}
+    .shop:before{height:38px;bottom:22px;border-width:3px;border-radius:7px 7px 0 0;background:repeating-linear-gradient(90deg,#fff 0 16px,#f25f5c 16px 32px)}
+    .counter{left:5%;right:5%;bottom:5px;height:29px;border-radius:7px;border-top-width:5px;box-shadow:0 3px 0 #503017}
+    .build-zone{width:96%;height:calc(100% - 27px);bottom:24px}
+    .plate{width:min(174px,50vw);height:9px;border-width:2px;box-shadow:0 3px 0 #758e91;margin-top:1px}
+    .built{width:min(158px,46vw);height:25px;margin:-3px 0;filter:drop-shadow(0 2px 1px #0003)}
+    .built.food.top-bun{height:29px}.built.food.bottom-bun{height:22px}.built.food.lettuce{height:18px}.built.food.patty{height:24px}.built.food.cheese{height:17px}.built.food.tomato{height:18px}
+    .message{top:27px;max-width:94%;padding:4px 7px;font-size:.62rem;white-space:normal;text-align:center}
+
+    .right h2{display:none}
+    .ingredients{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+    .ingredient{min-width:0;min-height:45px;padding:3px 2px;border-radius:8px;box-shadow:0 3px 0 #d9c9ad;font-size:.57rem;line-height:1.05;overflow:hidden}
+    .ingredient:hover{transform:none}.ingredient:active{transform:translateY(2px);box-shadow:0 1px 0 #d9c9ad}
+    .swatch{width:90%;height:14px;margin:0 auto 2px;filter:drop-shadow(0 1px 1px #0002)}
+    .swatch.food.top-bun{height:16px}.swatch.food.bottom-bun{height:13px}.swatch.food.lettuce{height:12px}.swatch.food.patty{height:15px}.swatch.food.cheese{height:12px}.swatch.food.tomato{height:13px}
+    .food.top-bun::after{font-size:7px;letter-spacing:2px;left:14%;top:0}
+    .controls{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin-top:4px}
+    .action{min-width:0;min-height:29px;padding:4px 2px;border-radius:8px;font-size:.64rem;line-height:1.05}
+    .full{grid-column:auto}
+    .help{display:none}
+    .modal{padding:18px 12px;border-radius:20px;max-height:calc(100dvh - 16px);overflow:auto}
+    .modal h2{font-size:1.45rem}.difficulty{flex-wrap:wrap;margin:10px 0}
   }
-  @media(max-width:420px){
-    .top-actions{flex-direction:column}
-    .icon-btn{min-height:36px;padding:6px 8px;font-size:.78rem}
-    .hud{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .stat b{font-size:.7rem}.stat strong{font-size:1.05rem}
-    .panel h2{font-size:1rem}
-    .ingredients{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .ingredient{font-size:.8rem;min-height:68px}
-    .game{min-height:430px}
-    .build-zone{height:340px;bottom:68px}
-    .shop{height:185px}.counter{bottom:16px;height:56px}
-    .help{display:grid;grid-template-columns:1fr 1fr;justify-items:center;width:100%;font-size:.76rem}
-    .help-item:last-child{grid-column:1/-1}
+
+  /* Extra compression for short portrait phones while preserving both burger views. */
+  @media(max-width:720px) and (max-height:700px) and (orientation:portrait){
+    header{min-height:29px;margin-bottom:2px}.icon-btn{min-height:27px;padding:3px 5px;font-size:.6rem}h1{font-size:1rem}
+    .hud{margin-bottom:3px}.hud .stat{padding:2px}.stat b{font-size:.47rem}.stat strong{font-size:.72rem}
+    main{grid-template-columns:minmax(108px,42%) minmax(0,58%);gap:4px}
+    .panel{padding:4px;border-radius:12px}.panel h2{font-size:.58rem;margin-bottom:1px}
+    .order-name{font-size:.58rem}.mini{width:min(98px,29vw);height:15px}.mini.food.top-bun{height:18px}.mini.food.patty{height:17px}
+    .shop{height:64px}.counter{height:25px}.build-zone{bottom:21px;height:calc(100% - 23px)}
+    .built{width:min(145px,44vw);height:22px}.built.food.top-bun{height:26px}.built.food.patty{height:22px}
+    .ingredient{min-height:39px;font-size:.52rem;padding:2px 1px}.swatch{height:11px;margin-bottom:1px}
+    .controls{margin-top:3px}.action{min-height:26px;font-size:.58rem}
   }
-  @media(max-width:340px){
-    .brand{gap:4px}.logo{display:none}
-    .top-actions{flex-direction:row}
-    .icon-btn{font-size:.72rem;padding:6px}
-    .ingredients{grid-template-columns:1fr 1fr}
-    .help{grid-template-columns:1fr;font-size:.72rem}
-    .help-item:last-child{grid-column:auto}
+
+  @media(max-width:360px){
+    main{grid-template-columns:minmax(101px,41%) minmax(0,59%)}
+    .mini{width:min(92px,28vw)}
+    .built{width:min(132px,43vw)}
+    .ingredient{font-size:.49rem}
   }
+
+  /* Compact three-column layout for phones/tablets held horizontally. */
   @media(orientation:landscape) and (max-height:560px) and (max-width:950px){
-    .app{padding-top:8px;padding-bottom:8px}
-    header{margin-bottom:8px}.hud{margin-bottom:8px}
-    main{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(250px,.85fr);align-items:start}
-    .left{grid-column:1/-1}.left .order-card{display:grid;grid-template-columns:180px 1fr}.order-stack{min-height:90px}
-    .game{min-height:390px}.right{order:initial}
-    .build-zone{height:310px}.shop{height:160px}
+    html,body{height:100%;overflow:hidden}
+    .app{height:100dvh;display:grid;grid-template-rows:auto auto minmax(0,1fr);padding:5px 7px;overflow:hidden}
+    header{min-height:31px;margin-bottom:3px;align-items:center}.logo{display:none}h1{font-size:1.05rem}.subtitle{display:none}
+    .icon-btn{min-height:29px;padding:4px 7px;font-size:.66rem}
+    .hud{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin-bottom:4px}.hud .stat{padding:3px 5px;border-radius:9px}.stat b{font-size:.55rem}.stat strong{font-size:.82rem}
+    main{min-height:0;height:100%;display:grid;grid-template-columns:minmax(105px,21%) minmax(190px,1fr) minmax(215px,31%);grid-template-rows:minmax(0,1fr);grid-template-areas:"order game tools";gap:5px;align-items:stretch}
+    .left{grid-area:order}.game{grid-area:game;min-height:0;height:auto}.right{grid-area:tools}
+    .panel{min-height:0;padding:5px;border-radius:13px;border-width:2px}
+    .panel h2{font-size:.63rem;margin:0 0 2px;text-align:center}.right h2{display:block}
+    .left .order-card{display:flex;height:calc(100% - 18px);min-height:0;padding:3px;flex-direction:column}.order-name{font-size:.62rem;margin-bottom:1px}.order-stack{min-height:0;flex:1;justify-content:center}.order-tip{display:none}
+    .mini{width:min(92px,17vw);height:14px}.mini.food.top-bun{height:17px}.mini.food.bottom-bun{height:14px}.mini.food.lettuce{height:12px}.mini.food.patty{height:16px}.mini.food.cheese{height:12px}.mini.food.tomato{height:13px}
+    .game-label{display:block;top:4px;left:5px;font-size:.56rem}
+    .shop{height:70px}.counter{bottom:5px;height:27px}.build-zone{height:calc(100% - 22px);bottom:24px}.plate{width:min(145px,25vw)}.built{width:min(132px,23vw);height:22px}
+    .ingredients{grid-template-columns:repeat(2,minmax(0,1fr));gap:3px}.ingredient{min-height:40px;padding:2px;font-size:.56rem}.swatch{height:12px;margin-bottom:1px}
+    .controls{grid-template-columns:1fr 1fr;gap:3px;margin-top:4px}.action{min-height:27px;padding:3px;font-size:.6rem}.full{grid-column:1/-1}.help{display:none}
   }
 </style>
 </head>
@@ -125,7 +173,7 @@
 </section>
 <main>
  <aside class="panel left"><h2>🧾 오늘의 주문</h2><div class="order-card"><div><div class="order-name" id="orderName">클래식 버거</div><div class="order-stack" id="orderStack"></div></div><p class="order-tip">아래쪽 재료부터 차례대로 선택하세요.<br>잘못 쌓으면 점수가 깎여요.</p></div></aside>
- <section class="panel game" aria-label="햄버거 조립 공간"><div class="message" id="message">완벽해요!</div><div class="shop"></div><div class="counter"></div><div class="build-zone" id="buildZone"><div class="plate"></div></div></section>
+ <section class="panel game" aria-label="햄버거 조립 공간"><div class="game-label">🍔 내 햄버거</div><div class="message" id="message">완벽해요!</div><div class="shop"></div><div class="counter"></div><div class="build-zone" id="buildZone"><div class="plate"></div></div></section>
  <aside class="panel right"><h2>🥬 재료 선택</h2><div class="ingredients" id="ingredients"></div><div class="controls"><button class="action undo" id="undoBtn">↶ 하나 빼기</button><button class="action submit" id="submitBtn">주문 완성</button><button class="action full" id="clearBtn">처음부터</button></div><p class="help"><span class="help-item"><span class="key">1–6</span> 재료 선택</span><span class="help-item"><span class="key">Enter</span> 완성</span><span class="help-item"><span class="key">Z</span> 되돌리기</span></p></aside>
 </main>
 </div>
