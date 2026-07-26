@@ -166,7 +166,7 @@
 <div class="app">
 <header>
   <div class="brand"><div class="logo" aria-hidden="true"><span class="t"></span><span class="l"></span><span class="p"></span><span class="b"></span></div><div><h1>버거 타워</h1><p class="subtitle">주문서를 보고 재료를 정확히 쌓으세요!</p></div></div>
-  <div class="top-actions"><button class="icon-btn" id="soundBtn" aria-label="소리 켜기/끄기">🔊 소리</button><button class="icon-btn" id="howBtn">? 방법</button></div>
+  <div class="top-actions"><button class="icon-btn" id="soundBtn" aria-label="소리 켜기/끄기">🔊 소리</button><button class="icon-btn" id="howBtn">🎚️ Level</button></div>
 </header>
 <section class="hud">
  <div class="stat"><b>점수</b><strong id="score">0</strong></div><div class="stat"><b>남은 시간</b><strong id="time">60</strong>초</div><div class="stat"><b>완성 버거</b><strong id="served">0</strong>개</div><div class="stat"><b>콤보</b><strong id="combo">×1</strong></div>
@@ -179,6 +179,7 @@
 </div>
 <div class="overlay" id="startOverlay"><div class="modal"><div class="logo" style="margin:auto;transform:scale(1.35)"><span class="t"></span><span class="l"></span><span class="p"></span><span class="b"></span></div><h2>버거 타워</h2><p>손님 주문과 똑같은 순서로 햄버거를 쌓으세요.<br>연속 성공하면 콤보 점수가 올라갑니다.</p><div class="difficulty" id="difficulty"><button data-level="easy">쉬움 90초</button><button data-level="normal" class="active">보통 60초</button><button data-level="hard">어려움 45초</button></div><button class="primary" id="startBtn">게임 시작</button></div></div>
 <div class="overlay hidden" id="endOverlay"><div class="modal"><h2>영업 종료!</h2><p id="resultText"></p><button class="primary" id="restartBtn">다시 도전</button></div></div>
+<audio id="bgm" preload="auto" loop src="https://u1.padletusercontent.com/uploads/padlet-uploads-usc1/2027944856/0ef50f1ae53eff9d481dad63e60fc5be/________.mp3?token=XQNtmV_CIy90evVg65JMm_Dl9NGEm2NBLZUwFYk5S1i9AhZFxOzFzE6_OgEMEF9oIREFrRMoQrjeYjlzZDBQUgQ-1_7xJpUUYk4RGJUFrjPfQwod3ToplxrgDgv1Eg074sWURhZcLBhe7V0TK3tSwEQog3kiXmdT2y4b7ikWBgESA7AdZeD4LQWRYOVu2A4REaeHB9FQs2bDZ4Qg2r_skai0pUUJ-HupihOzajjZTgUarElhDYUoWvnuATHelQ3w"></audio>
 <script>
 (()=>{
 'use strict';
@@ -199,6 +200,10 @@ const ORDERS=[
 ];
 const $=s=>document.querySelector(s), ingredients=$('#ingredients'), build=$('#buildZone');
 let chosen=[],order=null,score=0,served=0,combo=1,time=60,timer=null,running=false,sound=true,level='normal';
+const bgm=$('#bgm');
+bgm.volume=.28;
+function playBgm(){if(!sound)return;const promise=bgm.play();if(promise&&typeof promise.catch==='function')promise.catch(()=>{});}
+function pauseBgm(){bgm.pause();}
 function piece(key,mini=false){const d=DATA[key],el=document.createElement('div');el.className=`${mini?'mini':'built'} food ${d.className}`;el.title=d.name;return el}
 Object.keys(DATA).forEach((key,i)=>{const b=document.createElement('button');b.className='ingredient';b.dataset.key=key;b.innerHTML=`<span class="swatch food ${DATA[key].className}"></span>${i+1}. ${DATA[key].name}`;b.onclick=()=>add(key);ingredients.appendChild(b)});
 function add(key){if(!running)return;if(chosen.length>=10){flash('너무 높아요!',false);return}chosen.push(key);build.appendChild(piece(key,false));playPlaceSound(key,chosen.length);updateButtons()}
@@ -209,8 +214,8 @@ function renderOrder(){order=ORDERS[Math.floor(Math.random()*ORDERS.length)];$('
 function submit(){if(!running||!chosen.length)return;const exact=chosen.length===order.stack.length&&chosen.every((v,i)=>v===order.stack[i]);if(exact){const pts=100*combo+Math.max(0,time);score+=pts;served++;combo=Math.min(5,combo+1);flash(`완벽! +${pts}점`,true);confetti();playSuccessSound();clear();renderOrder()}else{score=Math.max(0,score-30);combo=1;flash('주문과 달라요! -30점',false);build.classList.add('shake');setTimeout(()=>build.classList.remove('shake'),300);playErrorSound()}updateHud()}
 function updateHud(){$('#score').textContent=score.toLocaleString();$('#served').textContent=served;$('#combo').textContent='×'+combo;$('#time').textContent=time;$('#time').parentElement.classList.toggle('time-low',time<=10)}
 function flash(txt,ok){const m=$('#message');m.textContent=txt;m.style.background=ok?'#278c6f':'#d83b50';m.classList.add('show');setTimeout(()=>m.classList.remove('show'),950)}
-function start(){clearInterval(timer);score=0;served=0;combo=1;time=level==='easy'?90:level==='hard'?45:60;running=true;clear();renderOrder();updateHud();$('#startOverlay').classList.add('hidden');$('#endOverlay').classList.add('hidden');timer=setInterval(()=>{time--;updateHud();if(time<=0)end()},1000)}
-function end(){running=false;clearInterval(timer);const rank=score>=1800?'버거 마스터':score>=900?'프로 셰프':score>=400?'주방 보조':'새내기 셰프';$('#resultText').innerHTML=`최종 점수 <b>${score.toLocaleString()}점</b><br>완성한 버거 <b>${served}개</b><br><br>오늘의 등급: <b>${rank}</b>`;$('#endOverlay').classList.remove('hidden');playEndSound()}
+function start(){clearInterval(timer);playBgm();score=0;served=0;combo=1;time=level==='easy'?90:level==='hard'?45:60;running=true;clear();renderOrder();updateHud();$('#startOverlay').classList.add('hidden');$('#endOverlay').classList.add('hidden');timer=setInterval(()=>{time--;updateHud();if(time<=0)end()},1000)}
+function end(){running=false;clearInterval(timer);pauseBgm();const rank=score>=1800?'버거 마스터':score>=900?'프로 셰프':score>=400?'주방 보조':'새내기 셰프';$('#resultText').innerHTML=`최종 점수 <b>${score.toLocaleString()}점</b><br>완성한 버거 <b>${served}개</b><br><br>오늘의 등급: <b>${rank}</b>`;$('#endOverlay').classList.remove('hidden');playEndSound()}
 let audioCtx=null;
 function getAudio(){
  if(!sound)return null;
@@ -256,8 +261,8 @@ function playSuccessSound(){
 function playEndSound(){[392,330,262,196].forEach((f,i)=>tone(f,i*.11,.2,'triangle',.04))}
 function confetti(){for(let i=0;i<24;i++){const c=document.createElement('i');c.className='confetti';c.style.left=(45+Math.random()*10)+'vw';c.style.top='22vh';c.style.background=['#ef476f','#ffd166','#06d6a0','#4d96ff','#8338ec'][i%5];c.style.setProperty('--dx',(Math.random()*400-200)+'px');c.style.animationDelay=(Math.random()*.16)+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),1800)}}
 $('#undoBtn').onclick=undo;$('#clearBtn').onclick=clear;$('#submitBtn').onclick=submit;$('#startBtn').onclick=start;$('#restartBtn').onclick=start;
-$('#soundBtn').onclick=()=>{sound=!sound;$('#soundBtn').textContent=sound?'🔊 소리':'🔇 무음'};
-$('#howBtn').onclick=()=>{$('#startOverlay').classList.remove('hidden')};
+$('#soundBtn').onclick=()=>{sound=!sound;$('#soundBtn').textContent=sound?'🔊 소리':'🔇 무음';if(sound&&running)playBgm();else pauseBgm()};
+$('#howBtn').onclick=()=>{if(running){clearInterval(timer);running=false;pauseBgm()}$('#startOverlay').classList.remove('hidden')};
 $('#difficulty').onclick=e=>{if(!e.target.dataset.level)return;level=e.target.dataset.level;document.querySelectorAll('#difficulty button').forEach(b=>b.classList.toggle('active',b===e.target))};
 window.addEventListener('keydown',e=>{if(/^[1-6]$/.test(e.key))add(Object.keys(DATA)[+e.key-1]);else if(e.key==='Enter')submit();else if(e.key.toLowerCase()==='z')undo()});
 renderOrder();updateButtons();
