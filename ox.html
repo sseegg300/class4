@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OX LED 전광판 (OX LED Signboard)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;700;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Noto Sans KR', 'Gowun Dodum', sans-serif;
+            background-color: #08080f;
+            color: #ffffff;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* LED Screen Background Grid Matrix */
+        .led-grid {
+            background-image: 
+                radial-gradient(rgba(255, 255, 255, 0.12) 1.5px, transparent 0);
+            background-size: 16px 16px;
+            background-position: -8px -8px;
+        }
+
+        /* Neon Glow Utility Styles */
+        .glow-o {
+            color: #3b82f6;
+            text-shadow: 
+                0 0 10px rgba(59, 130, 246, 0.8),
+                0 0 25px rgba(59, 130, 246, 0.6),
+                0 0 50px rgba(59, 130, 246, 0.4),
+                0 0 100px rgba(59, 130, 246, 0.3);
+        }
+
+        .glow-x {
+            color: #ef4444;
+            text-shadow: 
+                0 0 10px rgba(239, 68, 68, 0.8),
+                0 0 25px rgba(239, 68, 68, 0.6),
+                0 0 50px rgba(239, 68, 68, 0.4),
+                0 0 100px rgba(239, 68, 68, 0.3);
+        }
+
+        .glow-heart {
+            color: #ec4899;
+            text-shadow: 
+                0 0 12px rgba(236, 72, 153, 0.9),
+                0 0 30px rgba(236, 72, 153, 0.7),
+                0 0 60px rgba(236, 72, 153, 0.5),
+                0 0 110px rgba(236, 72, 153, 0.4);
+        }
+
+        /* Animations */
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.06); opacity: 0.92; }
+        }
+
+        @keyframes shakeX {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-15px) rotate(-3deg); }
+            40%, 80% { transform: translateX(15px) rotate(3deg); }
+        }
+
+        @keyframes bounceHeart {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.2); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .animate-pulse-glow {
+            animation: pulseGlow 1.8s infinite ease-in-out;
+        }
+
+        .animate-shake {
+            animation: shakeX 0.45s ease-in-out;
+        }
+
+        .animate-heart-pop {
+            animation: bounceHeart 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Responsive text sizing helper */
+        .symbol-responsive {
+            font-size: min(38vw, 45vh);
+        }
+
+        /* Custom scrollbar for control drawer */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="relative min-h-screen w-screen bg-slate-950 flex flex-col justify-between overflow-hidden">
+
+    <!-- Background Particle Canvas -->
+    <canvas id="effectsCanvas" class="absolute inset-0 pointer-events-none z-10 w-full h-full"></canvas>
+
+    <!-- LED Grid Texture Overlay -->
+    <div id="ledGridOverlay" class="absolute inset-0 led-grid pointer-events-none z-0 opacity-80 transition-opacity duration-300"></div>
+
+    <!-- Top Bar Controls -->
+    <header class="relative z-20 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-md border-b border-slate-800/80 transition-all duration-300">
+        <div class="flex items-center space-x-2 sm:space-x-3 text-center">
+            <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-pink-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-pink-500/30 shrink-0">
+                <i class="fa-solid font-bold text-white text-base sm:text-lg">OX</i>
+            </div>
+            <div>
+                <h1 class="text-base sm:text-lg font-black tracking-wide bg-gradient-to-r from-pink-400 via-purple-300 to-blue-400 bg-clip-text text-transparent">
+                    LED 스마트 전광판
+                </h1>
+                <p class="text-[10px] sm:text-xs text-slate-400 hidden sm:block">단축키: [O] O표시 | [X] X표시 | [H/스페이스바] 하트</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Display Section -->
+    <main id="mainDisplayArea" class="relative z-10 flex-1 flex flex-col items-center justify-center p-2 sm:p-4 min-h-0 cursor-pointer select-none">
+        <!-- Main Symbol Display Center -->
+        <div id="displayContainer" class="relative flex items-center justify-center w-full h-full max-w-5xl transition-all duration-300">
+            <!-- Default Welcome Display -->
+            <div id="symbolWelcome" class="flex flex-col items-center justify-center text-center space-y-3 sm:space-y-4 text-slate-500">
+                <div class="flex space-x-4 sm:space-x-6 text-5xl sm:text-7xl md:text-8xl opacity-80">
+                    <span class="glow-o">⭕</span>
+                    <span class="glow-x">❌</span>
+                    <span class="glow-heart animate-pulse">❤️</span>
+                </div>
+                <p class="text-lg sm:text-xl md:text-2xl font-semibold text-slate-400 px-4">버튼을 눌러 전광판에 표현해 보세요!</p>
+            </div>
+
+            <!-- Giant Dynamic Symbol Wrapper -->
+            <div id="symbolActive" class="hidden flex items-center justify-center w-full h-full">
+                <!-- Inner symbol SVG or HTML renders dynamically here -->
+                <div id="symbolContent" class="symbol-responsive font-black leading-none flex items-center justify-center transition-all transform duration-150">
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Bottom Control Bar (Main Buttons) -->
+    <footer id="bottomControlBar" class="relative z-20 p-3 sm:p-4 md:p-6 bg-slate-900/80 backdrop-blur-xl border-t border-slate-800/90 transition-all duration-300">
+        <div class="max-w-3xl mx-auto grid grid-cols-3 gap-2 sm:gap-4 md:gap-6">
+            
+            <!-- O Button -->
+            <button id="btnO" class="group relative flex flex-col items-center justify-center py-3 sm:py-5 md:py-6 px-2 sm:px-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 active:scale-95 shadow-lg shadow-blue-900/50 border border-blue-400/30 transition-all duration-200">
+                <div class="absolute inset-0 rounded-xl sm:rounded-2xl bg-blue-400/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <span class="text-3xl sm:text-5xl md:text-6xl font-black text-white drop-shadow-md transition-transform group-hover:scale-110">⭕</span>
+                <span class="mt-1 text-[11px] sm:text-xs md:text-sm font-bold text-blue-100 tracking-wider">O (정답)</span>
+            </button>
+
+            <!-- X Button -->
+            <button id="btnX" class="group relative flex flex-col items-center justify-center py-3 sm:py-5 md:py-6 px-2 sm:px-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 active:scale-95 shadow-lg shadow-red-900/50 border border-red-400/30 transition-all duration-200">
+                <div class="absolute inset-0 rounded-xl sm:rounded-2xl bg-red-400/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <span class="text-3xl sm:text-5xl md:text-6xl font-black text-white drop-shadow-md transition-transform group-hover:scale-110">❌</span>
+                <span class="mt-1 text-[11px] sm:text-xs md:text-sm font-bold text-red-100 tracking-wider">X (오답)</span>
+            </button>
+
+            <!-- Heart Button (Special Sound Linked) -->
+            <button id="btnHeart" class="group relative flex flex-col items-center justify-center py-3 sm:py-5 md:py-6 px-2 sm:px-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-pink-500 via-rose-600 to-purple-700 hover:from-pink-400 hover:to-purple-600 active:scale-95 shadow-lg shadow-pink-600/50 border border-pink-300/40 transition-all duration-200">
+                <div class="absolute inset-0 rounded-xl sm:rounded-2xl bg-pink-300/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <span class="text-3xl sm:text-5xl md:text-6xl font-black text-white drop-shadow-md transition-transform group-hover:scale-125 animate-pulse">❤️</span>
+                <span class="mt-1 text-[11px] sm:text-xs md:text-sm font-bold text-pink-100 tracking-wider">예쁜 하트</span>
+            </button>
+
+        </div>
+    </footer>
+
+    <!-- Audio Element for Heart Effect Sound -->
+    <!-- Padlet User Audio Asset as requested -->
+    <audio id="heartAudio" preload="auto" crossorigin="anonymous">
+        <source src="https://u1.padletusercontent.com/uploads/padlet-uploads-usc1/2027944856/52421605b9dcc458086ecd9445e3fed9/effect2.mp3?token=XQNtmV_CIy90evVg65JMm_Dl9NGEm2NBLZUwFYk5S1i9AhZFxOzFzE6_OgEMEF9oIREFrRMoQrjeYjlzZDBQUgQ-1_7xJpUUYk4RGJUFrjPfQwod3ToplxrgDgv1Eg07IPBK3yoj9OqS_rBG1iPOrx-UMkyY0r8tmPWz0tD69zhIhyU-VdOmbNbWVjIb-ZzjNCTuYnYghGV-_x6BVNdeeed2VZed2P8V-v4hZP4hFBGSdViXSYIA5EUsSEAltjOQ" type="audio/mpeg">
+    </audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // App state variables
+            const soundMuted = false;
+            const masterVolume = 0.8;
+
+            // DOM Elements
+            const heartAudio = document.getElementById('heartAudio');
+            const symbolWelcome = document.getElementById('symbolWelcome');
+            const symbolActive = document.getElementById('symbolActive');
+            const symbolContent = document.getElementById('symbolContent');
+            const mainDisplayArea = document.getElementById('mainDisplayArea');
+            
+            // Main Display Buttons
+            const btnO = document.getElementById('btnO');
+            const btnX = document.getElementById('btnX');
+            const btnHeart = document.getElementById('btnHeart');
+
+            // Web Audio API for O and X synthesized sound effects
+            let audioCtx = null;
+
+            function initAudioContext() {
+                if (!audioCtx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) {
+                        audioCtx = new AudioContext();
+                    }
+                }
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            }
+
+            // Play Correct Sound (O) - Bright Chime
+            function playOSound() {
+                if (soundMuted) return;
+                initAudioContext();
+                if (!audioCtx) return;
+
+                const now = audioCtx.currentTime;
+                
+                // Osc 1: Chime High
+                const osc1 = audioCtx.createOscillator();
+                const gain1 = audioCtx.createGain();
+                
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(523.25, now); // C5
+                osc1.frequency.exponentialRampToValueAtTime(1046.50, now + 0.15); // C6
+
+                gain1.gain.setValueAtTime(0.3 * masterVolume, now);
+                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+                osc1.connect(gain1);
+                gain1.connect(audioCtx.destination);
+
+                osc1.start(now);
+                osc1.stop(now + 0.6);
+
+                // Second tone for ding-dong feeling
+                setTimeout(() => {
+                    if (soundMuted || !audioCtx) return;
+                    const now2 = audioCtx.currentTime;
+                    const osc2 = audioCtx.createOscillator();
+                    const gain2 = audioCtx.createGain();
+                    
+                    osc2.type = 'triangle';
+                    osc2.frequency.setValueAtTime(1318.51, now2); // E6
+                    gain2.gain.setValueAtTime(0.4 * masterVolume, now2);
+                    gain2.gain.exponentialRampToValueAtTime(0.001, now2 + 0.5);
+
+                    osc2.connect(gain2);
+                    gain2.connect(audioCtx.destination);
+
+                    osc2.start(now2);
+                    osc2.stop(now2 + 0.5);
+                }, 120);
+            }
+
+            // Play Wrong Sound (X) - Low Buzz
+            function playXSound() {
+                if (soundMuted) return;
+                initAudioContext();
+                if (!audioCtx) return;
+
+                const now = audioCtx.currentTime;
+                
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(160, now);
+                osc.frequency.setValueAtTime(110, now + 0.1);
+
+                gain.gain.setValueAtTime(0.4 * masterVolume, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.5);
+            }
+
+            // Play Heart Sound - Linked to requested padlet MP3 asset URL
+            function playHeartSound() {
+                if (soundMuted) return;
+                initAudioContext();
+
+                try {
+                    heartAudio.volume = masterVolume;
+                    heartAudio.currentTime = 0;
+                    const playPromise = heartAudio.play();
+                    
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            console.warn("Audio playback issue or blocked by browser:", error);
+                            playHeartSynthFallback();
+                        });
+                    }
+                } catch (e) {
+                    playHeartSynthFallback();
+                }
+            }
+
+            // Backup synth for Heart sound
+            function playHeartSynthFallback() {
+                if (!audioCtx || soundMuted) return;
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.2);
+
+                gain.gain.setValueAtTime(0.3 * masterVolume, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.4);
+            }
+
+            // Particle Canvas Logic
+            const canvas = document.getElementById('effectsCanvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizeCanvas);
+            resizeCanvas();
+
+            class Particle {
+                constructor(x, y, type) {
+                    this.x = x;
+                    this.y = y;
+                    this.type = type;
+                    this.size = Math.random() * (type === 'heart' ? 28 : 12) + 12;
+                    this.vx = (Math.random() - 0.5) * (type === 'heart' ? 8 : 14);
+                    this.vy = (Math.random() - 0.5) * (type === 'heart' ? 8 : 14) - (type === 'heart' ? 3 : 0);
+                    this.gravity = type === 'heart' ? -0.05 : 0.2;
+                    this.life = 1;
+                    this.decay = Math.random() * 0.02 + 0.015;
+                    this.color = type === 'heart' ? `hsl(${Math.random() * 40 + 330}, 100%, 65%)` :
+                                 type === 'O' ? `hsl(${Math.random() * 40 + 200}, 100%, 60%)` :
+                                 `hsl(${Math.random() * 20 + 350}, 100%, 55%)`;
+                    this.rotation = Math.random() * Math.PI * 2;
+                    this.rotSpeed = (Math.random() - 0.5) * 0.1;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.vy += this.gravity;
+                    this.life -= this.decay;
+                    this.rotation += this.rotSpeed;
+                }
+
+                draw() {
+                    ctx.save();
+                    ctx.globalAlpha = Math.max(0, this.life);
+                    ctx.translate(this.x, this.y);
+                    ctx.rotate(this.rotation);
+
+                    if (this.type === 'heart') {
+                        ctx.fillStyle = this.color;
+                        ctx.font = `${this.size}px serif`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('❤️', 0, 0);
+                    } else if (this.type === 'O') {
+                        ctx.strokeStyle = this.color;
+                        ctx.lineWidth = 4;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, this.size / 2, 0, Math.PI * 2);
+                        ctx.stroke();
+                    } else {
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(0, 0, this.size / 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    ctx.restore();
+                }
+            }
+
+            function spawnBurst(x, y, type, count = 40) {
+                for (let i = 0; i < count; i++) {
+                    particles.push(new Particle(x, y, type));
+                }
+            }
+
+            function animateParticles() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    particles[i].update();
+                    particles[i].draw();
+                    if (particles[i].life <= 0) {
+                        particles.splice(i, 1);
+                    }
+                }
+                requestAnimationFrame(animateParticles);
+            }
+            animateParticles();
+
+            // Display Symbol Functions
+            function triggerO() {
+                symbolWelcome.classList.add('hidden');
+                symbolActive.classList.remove('hidden');
+
+                symbolContent.className = "symbol-responsive font-black leading-none flex items-center justify-center glow-o animate-pulse-glow";
+                symbolContent.textContent = '⭕';
+
+                triggerFlash('rgba(59, 130, 246, 0.25)');
+
+                const cx = window.innerWidth / 2;
+                const cy = window.innerHeight / 2;
+                spawnBurst(cx, cy, 'O', 35);
+
+                playOSound();
+            }
+
+            function triggerX() {
+                symbolWelcome.classList.add('hidden');
+                symbolActive.classList.remove('hidden');
+
+                symbolContent.className = "symbol-responsive font-black leading-none flex items-center justify-center glow-x animate-shake";
+                symbolContent.textContent = '❌';
+
+                triggerFlash('rgba(239, 68, 68, 0.25)');
+
+                const cx = window.innerWidth / 2;
+                const cy = window.innerHeight / 2;
+                spawnBurst(cx, cy, 'X', 30);
+
+                playXSound();
+            }
+
+            function triggerHeart() {
+                symbolWelcome.classList.add('hidden');
+                symbolActive.classList.remove('hidden');
+
+                symbolContent.className = "symbol-responsive font-black leading-none flex items-center justify-center glow-heart animate-heart-pop";
+                symbolContent.textContent = '❤️';
+
+                triggerFlash('rgba(236, 72, 153, 0.3)');
+
+                const cx = window.innerWidth / 2;
+                const cy = window.innerHeight / 2;
+                spawnBurst(cx, cy, 'heart', 50);
+
+                playHeartSound();
+            }
+
+            function triggerFlash(colorStr) {
+                const flashDiv = document.createElement('div');
+                flashDiv.className = 'fixed inset-0 pointer-events-none z-15 transition-opacity duration-300';
+                flashDiv.style.backgroundColor = colorStr;
+                document.body.appendChild(flashDiv);
+                
+                setTimeout(() => {
+                    flashDiv.style.opacity = '0';
+                    setTimeout(() => flashDiv.remove(), 300);
+                }, 50);
+            }
+
+            // Event Listeners for main buttons
+            btnO.addEventListener('click', (e) => {
+                e.stopPropagation();
+                triggerO();
+            });
+
+            btnX.addEventListener('click', (e) => {
+                e.stopPropagation();
+                triggerX();
+            });
+
+            btnHeart.addEventListener('click', (e) => {
+                e.stopPropagation();
+                triggerHeart();
+            });
+
+            // Keyboard Shortcuts
+            document.addEventListener('keydown', (e) => {
+                const key = e.key.toLowerCase();
+                if (key === 'o' || key === '1') {
+                    triggerO();
+                } else if (key === 'x' || key === '2') {
+                    triggerX();
+                } else if (key === 'h' || key === '3' || e.code === 'Space') {
+                    e.preventDefault();
+                    triggerHeart();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
