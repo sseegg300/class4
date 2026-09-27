@@ -12,12 +12,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
 
     <style>
+        html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            -webkit-text-size-adjust: 100%;
+        }
+
         * {
+            box-sizing: border-box;
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
         }
 
         body {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            min-height: 100vh;
+            min-height: 100dvh;
+            margin: 0;
             font-family: 'Noto Sans KR', 'Gowun Dodum', sans-serif;
             background-color: #08080f;
             color: #ffffff;
@@ -97,8 +112,9 @@
         }
 
         .symbol-responsive {
-            /* Adapt smoothly to portrait & landscape mobile/tablet screens without vertical overflow */
-            font-size: clamp(4.5rem, min(30vw, 32vh), 28rem);
+            /* Fit the symbol inside the available area in both tablet orientations. */
+            font-size: min(30vw, 32dvh, 28rem);
+            font-size: clamp(4rem, min(30vw, 32vh), 28rem);
             line-height: 1;
         }
 
@@ -119,6 +135,49 @@
             .btn-compact {
                 padding-top: 0.35rem !important;
                 padding-bottom: 0.35rem !important;
+            }
+        }
+
+        /* Tablets: keep controls compact so the display remains visible above them. */
+        @media (min-width: 600px) and (max-width: 1100px) {
+            header.header-compact {
+                padding: clamp(0.35rem, 1.2vh, 0.8rem) 1rem !important;
+            }
+
+            main#mainDisplayArea {
+                padding: clamp(0.35rem, 1.5vh, 1rem) !important;
+            }
+
+            footer#bottomControlBar {
+                padding: clamp(0.45rem, 1.5vh, 1rem) clamp(0.75rem, 3vw, 2rem) calc(clamp(0.45rem, 1.5vh, 1rem) + env(safe-area-inset-bottom, 0px)) !important;
+            }
+
+            #bottomControlBar > div {
+                gap: clamp(0.5rem, 2vw, 1.25rem) !important;
+            }
+
+            #bottomControlBar button {
+                min-height: clamp(4.25rem, 12vh, 7rem);
+                padding: clamp(0.35rem, 1.5vh, 0.85rem) 0.5rem !important;
+            }
+
+            #bottomControlBar button > span:first-of-type {
+                font-size: clamp(1.75rem, 5vw, 3.25rem) !important;
+                line-height: 1;
+            }
+        }
+
+        @media (orientation: landscape) and (max-height: 600px) {
+            header.header-compact p {
+                display: none;
+            }
+
+            #bottomControlBar button {
+                min-height: 3.5rem;
+            }
+
+            #bottomControlBar button > span:first-of-type {
+                font-size: clamp(1.5rem, 4vh, 2.5rem) !important;
             }
         }
     </style>
@@ -335,11 +394,17 @@
 
             function resizeCanvas() {
                 const dpr = window.devicePixelRatio || 1;
-                canvas.width = window.innerWidth * dpr;
-                canvas.height = window.innerHeight * dpr;
-                ctx.scale(dpr, dpr);
+                const width = document.documentElement.clientWidth;
+                const height = document.documentElement.clientHeight;
+                canvas.width = width * dpr;
+                canvas.height = height * dpr;
+                canvas.style.width = `${width}px`;
+                canvas.style.height = `${height}px`;
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             }
             window.addEventListener('resize', resizeCanvas);
+            window.visualViewport?.addEventListener('resize', resizeCanvas);
+            window.screen?.orientation?.addEventListener('change', resizeCanvas);
             resizeCanvas();
 
             class Particle {
