@@ -14,6 +14,7 @@
     <style>
         * {
             touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -23,12 +24,11 @@
             overflow: hidden;
             user-select: none;
             -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
         }
 
         /* LED Screen Background Grid Matrix */
         .led-grid {
-            background-image: radial-gradient(rgba(255, 255, 255, 0.12) 1.5px, transparent 0);
+            background-image: radial-gradient(rgba(255, 255, 255, 0.14) 1.8px, transparent 0);
             background-size: 16px 16px;
             background-position: -8px -8px;
         }
@@ -37,46 +37,46 @@
         .glow-o {
             color: #3b82f6;
             text-shadow: 
-                0 0 10px rgba(59, 130, 246, 0.8),
-                0 0 25px rgba(59, 130, 246, 0.6),
-                0 0 50px rgba(59, 130, 246, 0.4),
-                0 0 100px rgba(59, 130, 246, 0.3);
+                0 0 12px rgba(59, 130, 246, 0.9),
+                0 0 30px rgba(59, 130, 246, 0.7),
+                0 0 60px rgba(59, 130, 246, 0.5),
+                0 0 120px rgba(59, 130, 246, 0.35);
         }
 
         .glow-x {
             color: #ef4444;
             text-shadow: 
-                0 0 10px rgba(239, 68, 68, 0.8),
-                0 0 25px rgba(239, 68, 68, 0.6),
-                0 0 50px rgba(239, 68, 68, 0.4),
-                0 0 100px rgba(239, 68, 68, 0.3);
+                0 0 12px rgba(239, 68, 68, 0.9),
+                0 0 30px rgba(239, 68, 68, 0.7),
+                0 0 60px rgba(239, 68, 68, 0.5),
+                0 0 120px rgba(239, 68, 68, 0.35);
         }
 
         .glow-heart {
             color: #ec4899;
             text-shadow: 
-                0 0 12px rgba(236, 72, 153, 0.9),
-                0 0 30px rgba(236, 72, 153, 0.7),
-                0 0 60px rgba(236, 72, 153, 0.5),
-                0 0 110px rgba(236, 72, 153, 0.4);
+                0 0 14px rgba(236, 72, 153, 0.95),
+                0 0 35px rgba(236, 72, 153, 0.75),
+                0 0 70px rgba(236, 72, 153, 0.55),
+                0 0 130px rgba(236, 72, 153, 0.4);
         }
 
         /* Animations */
         @keyframes pulseGlow {
             0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.06); opacity: 0.92; }
+            50% { transform: scale(1.05); opacity: 0.92; }
         }
 
         @keyframes shakeX {
             0%, 100% { transform: translateX(0); }
-            20%, 60% { transform: translateX(-15px) rotate(-3deg); }
-            40%, 80% { transform: translateX(15px) rotate(3deg); }
+            20%, 60% { transform: translateX(-18px) rotate(-3deg); }
+            40%, 80% { transform: translateX(18px) rotate(3deg); }
         }
 
         @keyframes bounceHeart {
-            0% { transform: scale(0.3); opacity: 0; }
-            50% { transform: scale(1.2); }
-            70% { transform: scale(0.9); }
+            0% { transform: scale(0.2); opacity: 0; }
+            50% { transform: scale(1.22); }
+            70% { transform: scale(0.92); }
             100% { transform: scale(1); opacity: 1; }
         }
 
@@ -92,24 +92,24 @@
             animation: bounceHeart 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* Fully Fluid Symbol Sizing */
         .symbol-responsive {
-            font-size: clamp(8rem, min(36vw, 42vh), 32rem);
+            /* Adapt smoothly to portrait (4:3) and landscape (16:10 / 4:3) tablet screens */
+            font-size: clamp(7rem, min(42vw, 48vh), 36rem);
             line-height: 1;
         }
 
-        /* Mobile Landscape Optimization */
-        @media (max-height: 520px) {
+        /* Mobile / Tablet Landscape Low-Height Optimization */
+        @media (max-height: 550px) {
             .header-compact {
-                padding-top: 0.35rem !important;
-                padding-bottom: 0.35rem !important;
+                padding-top: 0.25rem !important;
+                padding-bottom: 0.25rem !important;
             }
             .symbol-responsive {
-                font-size: min(28vw, 38vh) !important;
+                font-size: min(32vw, 42vh) !important;
             }
             .btn-compact {
-                padding-top: 0.4rem !important;
-                padding-bottom: 0.4rem !important;
+                padding-top: 0.35rem !important;
+                padding-bottom: 0.35rem !important;
             }
         }
     </style>
@@ -122,34 +122,34 @@
     <!-- LED Grid Texture Overlay -->
     <div id="ledGridOverlay" class="absolute inset-0 led-grid pointer-events-none z-0 opacity-80"></div>
 
-    <!-- Responsive Top Header -->
-    <header class="header-compact relative z-20 flex items-center justify-center p-2.5 sm:p-4 bg-slate-900/70 backdrop-blur-md border-b border-slate-800/80 shrink-0">
-        <div class="flex items-center space-x-2 sm:space-x-3 text-center">
-            <div class="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-pink-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-pink-500/30 shrink-0">
-                <i class="fa-solid font-bold text-white text-xs sm:text-lg">OX</i>
+    <header class="header-compact relative z-20 flex items-center justify-center p-3 sm:p-4 md:p-5 bg-slate-900/70 backdrop-blur-md border-b border-slate-800/80 shrink-0">
+        <div class="flex items-center space-x-2.5 sm:space-x-4 text-center">
+            <div class="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-tr from-pink-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-pink-500/30 shrink-0">
+                <i class="fa-solid font-bold text-white text-xs sm:text-base md:text-xl">OX</i>
             </div>
             <div>
-                <h1 class="text-sm sm:text-lg font-black tracking-wide bg-gradient-to-r from-pink-400 via-purple-300 to-blue-400 bg-clip-text text-transparent">
+                <h1 class="text-base sm:text-xl md:text-2xl font-black tracking-wide bg-gradient-to-r from-pink-400 via-purple-300 to-blue-400 bg-clip-text text-transparent">
                     LED 스마트 전광판
                 </h1>
-                <p class="text-[10px] sm:text-xs text-slate-400 hidden sm:block">단축키: [O] O표시 | [X] X표시 | [H/스페이스바] 하트</p>
+                <p class="text-[11px] sm:text-xs md:text-sm text-slate-400 hidden sm:block">
+                    단축키: <span class="text-blue-400 font-semibold">[O]</span> O표시 | <span class="text-red-400 font-semibold">[X]</span> X표시 | <span class="text-pink-400 font-semibold">[H / 스페이스바]</span> 하트
+                </p>
             </div>
         </div>
     </header>
 
-    <!-- Main Center Symbol Container -->
-    <main id="mainDisplayArea" class="relative z-10 flex-1 flex flex-col items-center justify-center p-2 sm:p-4 min-h-0 cursor-pointer select-none">
-        <div id="displayContainer" class="relative flex items-center justify-center w-full h-full max-w-6xl">
+    <main id="mainDisplayArea" class="relative z-10 flex-1 flex flex-col items-center justify-center p-3 sm:p-5 md:p-8 min-h-0 cursor-pointer select-none">
+        <div id="displayContainer" class="relative flex items-center justify-center w-full h-full max-w-7xl">
             
             <!-- Default Welcome Display -->
-            <div id="symbolWelcome" class="flex flex-col items-center justify-center text-center space-y-3 sm:space-y-5 text-slate-500">
-                <div class="flex space-x-3 sm:space-x-6 text-4xl sm:text-7xl md:text-8xl opacity-85">
-                    <span class="glow-o">⭕</span>
-                    <span class="glow-x">❌</span>
-                    <span class="glow-heart animate-pulse">❤️</span>
+            <div id="symbolWelcome" class="flex flex-col items-center justify-center text-center space-y-4 sm:space-y-6 md:space-y-8 text-slate-500">
+                <div class="flex space-x-4 sm:space-x-8 md:space-x-12 text-5xl sm:text-7xl md:text-8xl lg:text-9xl opacity-90">
+                    <span class="glow-o hover:scale-110 transition-transform">⭕</span>
+                    <span class="glow-x hover:scale-110 transition-transform">❌</span>
+                    <span class="glow-heart animate-pulse hover:scale-110 transition-transform">❤️</span>
                 </div>
-                <p class="text-sm sm:text-lg md:text-2xl font-semibold text-slate-400 px-4 leading-relaxed">
-                    하단 버튼이나 키보드를 눌러 전광판을 켜보세요!
+                <p class="text-sm sm:text-xl md:text-2xl lg:text-3xl font-semibold text-slate-300 px-4 leading-relaxed max-w-3xl">
+                    하단 버튼이나 키보드/터치로 전광판을 작동해보세요!
                 </p>
             </div>
 
@@ -162,29 +162,29 @@
         </div>
     </main>
 
-    <!-- Responsive Bottom Control Bar -->
-    <footer id="bottomControlBar" class="relative z-20 p-2.5 sm:p-4 md:p-6 bg-slate-900/80 backdrop-blur-xl border-t border-slate-800/90 shrink-0">
-        <div class="max-w-3xl mx-auto grid grid-cols-3 gap-2 sm:gap-4 md:gap-6">
+    <!-- Responsive Bottom Control Bar (Mobile, Tablet, Desktop) -->
+    <footer id="bottomControlBar" class="relative z-20 p-3 sm:p-5 md:p-6 lg:p-8 bg-slate-900/85 backdrop-blur-xl border-t border-slate-800/90 shrink-0">
+        <div class="max-w-3xl md:max-w-4xl lg:max-w-5xl mx-auto grid grid-cols-3 gap-2.5 sm:gap-4 md:gap-6 lg:gap-8">
             
             <!-- O Button -->
-            <button id="btnO" class="btn-compact group relative flex flex-col items-center justify-center py-2.5 sm:py-5 md:py-6 px-2 sm:px-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 active:scale-95 shadow-lg shadow-blue-900/50 border border-blue-400/30 transition-all duration-150">
-                <div class="absolute inset-0 rounded-xl sm:rounded-2xl bg-blue-400/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <span class="text-2xl sm:text-5xl md:text-6xl font-black text-white drop-shadow-md transition-transform group-hover:scale-110">⭕</span>
-                <span class="mt-0.5 sm:mt-1 text-[10px] sm:text-xs md:text-sm font-bold text-blue-100 tracking-wider">O (정답)</span>
+            <button id="btnO" class="btn-compact group relative flex flex-col items-center justify-center py-3 sm:py-5 md:py-6 lg:py-8 px-2 sm:px-4 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-b from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 active:scale-95 shadow-lg shadow-blue-900/50 border border-blue-400/30 transition-all duration-150">
+                <div class="absolute inset-0 rounded-xl sm:rounded-2xl md:rounded-3xl bg-blue-400/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <span class="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white drop-shadow-md transition-transform group-hover:scale-110">⭕</span>
+                <span class="mt-1 sm:mt-1.5 text-[11px] sm:text-xs md:text-sm lg:text-base font-bold text-blue-100 tracking-wider">O (정답)</span>
             </button>
 
             <!-- X Button -->
-            <button id="btnX" class="btn-compact group relative flex flex-col items-center justify-center py-2.5 sm:py-5 md:py-6 px-2 sm:px-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 active:scale-95 shadow-lg shadow-red-900/50 border border-red-400/30 transition-all duration-150">
-                <div class="absolute inset-0 rounded-xl sm:rounded-2xl bg-red-400/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <span class="text-2xl sm:text-5xl md:text-6xl font-black text-white drop-shadow-md transition-transform group-hover:scale-110">❌</span>
-                <span class="mt-0.5 sm:mt-1 text-[10px] sm:text-xs md:text-sm font-bold text-red-100 tracking-wider">X (오답)</span>
+            <button id="btnX" class="btn-compact group relative flex flex-col items-center justify-center py-3 sm:py-5 md:py-6 lg:py-8 px-2 sm:px-4 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-b from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 active:scale-95 shadow-lg shadow-red-900/50 border border-red-400/30 transition-all duration-150">
+                <div class="absolute inset-0 rounded-xl sm:rounded-2xl md:rounded-3xl bg-red-400/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <span class="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white drop-shadow-md transition-transform group-hover:scale-110">❌</span>
+                <span class="mt-1 sm:mt-1.5 text-[11px] sm:text-xs md:text-sm lg:text-base font-bold text-red-100 tracking-wider">X (오답)</span>
             </button>
 
             <!-- Heart Button (Padlet Sound Connected) -->
-            <button id="btnHeart" class="btn-compact group relative flex flex-col items-center justify-center py-2.5 sm:py-5 md:py-6 px-2 sm:px-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-pink-500 via-rose-600 to-purple-700 hover:from-pink-400 hover:to-purple-600 active:scale-95 shadow-lg shadow-pink-600/50 border border-pink-300/40 transition-all duration-150">
-                <div class="absolute inset-0 rounded-xl sm:rounded-2xl bg-pink-300/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <span class="text-2xl sm:text-5xl md:text-6xl font-black text-white drop-shadow-md transition-transform group-hover:scale-125 animate-pulse">❤️</span>
-                <span class="mt-0.5 sm:mt-1 text-[10px] sm:text-xs md:text-sm font-bold text-pink-100 tracking-wider">예쁜 하트</span>
+            <button id="btnHeart" class="btn-compact group relative flex flex-col items-center justify-center py-3 sm:py-5 md:py-6 lg:py-8 px-2 sm:px-4 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-b from-pink-500 via-rose-600 to-purple-700 hover:from-pink-400 hover:to-purple-600 active:scale-95 shadow-lg shadow-pink-600/50 border border-pink-300/40 transition-all duration-150">
+                <div class="absolute inset-0 rounded-xl sm:rounded-2xl md:rounded-3xl bg-pink-300/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <span class="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white drop-shadow-md transition-transform group-hover:scale-125 animate-pulse">❤️</span>
+                <span class="mt-1 sm:mt-1.5 text-[11px] sm:text-xs md:text-sm lg:text-base font-bold text-pink-100 tracking-wider">예쁜 하트</span>
             </button>
 
         </div>
@@ -209,7 +209,6 @@
             const btnX = document.getElementById('btnX');
             const btnHeart = document.getElementById('btnHeart');
 
-            // Web Audio API for synthetic sound effects
             let audioCtx = null;
 
             function initAudioContext() {
@@ -339,9 +338,11 @@
                     this.x = x;
                     this.y = y;
                     this.type = type;
-                    this.size = Math.random() * (type === 'heart' ? 26 : 12) + 12;
-                    this.vx = (Math.random() - 0.5) * (type === 'heart' ? 9 : 14);
-                    this.vy = (Math.random() - 0.5) * (type === 'heart' ? 9 : 14) - (type === 'heart' ? 3 : 0);
+                    // Scales particles comfortably on tablets and desktops
+                    const sizeScale = window.innerWidth > 768 ? 1.4 : 1.0;
+                    this.size = (Math.random() * (type === 'heart' ? 26 : 12) + 12) * sizeScale;
+                    this.vx = (Math.random() - 0.5) * (type === 'heart' ? 10 : 16);
+                    this.vy = (Math.random() - 0.5) * (type === 'heart' ? 10 : 16) - (type === 'heart' ? 4 : 0);
                     this.gravity = type === 'heart' ? -0.04 : 0.22;
                     this.life = 1;
                     this.decay = Math.random() * 0.02 + 0.015;
@@ -416,7 +417,7 @@
                 symbolContent.textContent = '⭕';
 
                 triggerFlash('rgba(59, 130, 246, 0.25)');
-                spawnBurst(window.innerWidth / 2, window.innerHeight / 2, 'O', 35);
+                spawnBurst(window.innerWidth / 2, window.innerHeight / 2, 'O', window.innerWidth > 768 ? 55 : 35);
                 playOSound();
             }
 
@@ -428,7 +429,7 @@
                 symbolContent.textContent = '❌';
 
                 triggerFlash('rgba(239, 68, 68, 0.25)');
-                spawnBurst(window.innerWidth / 2, window.innerHeight / 2, 'X', 30);
+                spawnBurst(window.innerWidth / 2, window.innerHeight / 2, 'X', window.innerWidth > 768 ? 50 : 30);
                 playXSound();
             }
 
@@ -440,7 +441,7 @@
                 symbolContent.textContent = '❤️';
 
                 triggerFlash('rgba(236, 72, 153, 0.3)');
-                spawnBurst(window.innerWidth / 2, window.innerHeight / 2, 'heart', 50);
+                spawnBurst(window.innerWidth / 2, window.innerHeight / 2, 'heart', window.innerWidth > 768 ? 70 : 50);
                 playHeartSound();
             }
 
@@ -456,10 +457,18 @@
                 }, 50);
             }
 
-            // Click & Touch Event Handlers
-            btnO.addEventListener('click', (e) => { e.stopPropagation(); triggerO(); });
-            btnX.addEventListener('click', (e) => { e.stopPropagation(); triggerX(); });
-            btnHeart.addEventListener('click', (e) => { e.stopPropagation(); triggerHeart(); });
+            // Ultra-responsive Pointer / Touch Event Bindings for Mobile & Tablet
+            const bindTrigger = (element, triggerFn) => {
+                element.addEventListener('pointerdown', (e) => {
+                    e.stopPropagation();
+                    initAudioContext();
+                    triggerFn();
+                });
+            };
+
+            bindTrigger(btnO, triggerO);
+            bindTrigger(btnX, triggerX);
+            bindTrigger(btnHeart, triggerHeart);
 
             // Keyboard Shortcuts
             document.addEventListener('keydown', (e) => {
