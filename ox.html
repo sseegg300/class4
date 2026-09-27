@@ -24,6 +24,10 @@
             overflow: hidden;
             user-select: none;
             -webkit-user-select: none;
+            /* Safe area padding for mobile notches and side margins */
+            padding-top: env(safe-area-inset-top, 0px);
+            padding-left: env(safe-area-inset-left, 0px);
+            padding-right: env(safe-area-inset-right, 0px);
         }
 
         /* LED Screen Background Grid Matrix */
@@ -93,19 +97,24 @@
         }
 
         .symbol-responsive {
-            /* Adapt smoothly to portrait (4:3) and landscape (16:10 / 4:3) tablet screens */
-            font-size: clamp(7rem, min(42vw, 48vh), 36rem);
+            /* Adapt smoothly to portrait & landscape mobile/tablet screens without vertical overflow */
+            font-size: clamp(4.5rem, min(30vw, 32vh), 28rem);
             line-height: 1;
         }
 
-        /* Mobile / Tablet Landscape Low-Height Optimization */
-        @media (max-height: 550px) {
+        /* Safe area bottom padding for iOS/Android bottom gesture bar */
+        #bottomControlBar {
+            padding-bottom: calc(0.6rem + env(safe-area-inset-bottom, 0px));
+        }
+
+        /* Mobile / Small Height Device Optimization */
+        @media (max-height: 680px) {
             .header-compact {
                 padding-top: 0.25rem !important;
                 padding-bottom: 0.25rem !important;
             }
             .symbol-responsive {
-                font-size: min(32vw, 42vh) !important;
+                font-size: clamp(3.5rem, min(26vw, 28vh), 18rem) !important;
             }
             .btn-compact {
                 padding-top: 0.35rem !important;
@@ -114,7 +123,7 @@
         }
     </style>
 </head>
-<body class="relative h-screen h-[100svh] w-screen bg-slate-950 flex flex-col justify-between overflow-hidden">
+<body class="fixed inset-0 w-full h-full h-[100dvh] bg-slate-950 flex flex-col justify-between overflow-hidden">
 
     <!-- Particle Canvas Layer -->
     <canvas id="effectsCanvas" class="absolute inset-0 pointer-events-none z-10 w-full h-full"></canvas>
@@ -122,33 +131,33 @@
     <!-- LED Grid Texture Overlay -->
     <div id="ledGridOverlay" class="absolute inset-0 led-grid pointer-events-none z-0 opacity-80"></div>
 
-    <header class="header-compact relative z-20 flex items-center justify-center p-3 sm:p-4 md:p-5 bg-slate-900/70 backdrop-blur-md border-b border-slate-800/80 shrink-0">
-        <div class="flex items-center space-x-2.5 sm:space-x-4 text-center">
-            <div class="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-tr from-pink-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-pink-500/30 shrink-0">
-                <i class="fa-solid font-bold text-white text-xs sm:text-base md:text-xl">OX</i>
+    <header class="header-compact relative z-20 flex items-center justify-center px-3 py-2 sm:p-3 md:p-4 bg-slate-900/70 backdrop-blur-md border-b border-slate-800/80 shrink-0">
+        <div class="flex items-center space-x-2 sm:space-x-4 text-center">
+            <div class="w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11 rounded-lg sm:rounded-xl bg-gradient-to-tr from-pink-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-pink-500/30 shrink-0">
+                <i class="fa-solid font-bold text-white text-[11px] sm:text-sm md:text-lg">OX</i>
             </div>
             <div>
-                <h1 class="text-base sm:text-xl md:text-2xl font-black tracking-wide bg-gradient-to-r from-pink-400 via-purple-300 to-blue-400 bg-clip-text text-transparent">
+                <h1 class="text-sm sm:text-lg md:text-2xl font-black tracking-wide bg-gradient-to-r from-pink-400 via-purple-300 to-blue-400 bg-clip-text text-transparent">
                     LED 스마트 전광판
                 </h1>
-                <p class="text-[11px] sm:text-xs md:text-sm text-slate-400 hidden sm:block">
+                <p class="text-[10px] sm:text-xs md:text-sm text-slate-400 hidden sm:block">
                     단축키: <span class="text-blue-400 font-semibold">[O]</span> O표시 | <span class="text-red-400 font-semibold">[X]</span> X표시 | <span class="text-pink-400 font-semibold">[H / 스페이스바]</span> 하트
                 </p>
             </div>
         </div>
     </header>
 
-    <main id="mainDisplayArea" class="relative z-10 flex-1 flex flex-col items-center justify-center p-3 sm:p-5 md:p-8 min-h-0 cursor-pointer select-none">
+    <main id="mainDisplayArea" class="relative z-10 flex-1 flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 min-h-0 cursor-pointer select-none overflow-hidden">
         <div id="displayContainer" class="relative flex items-center justify-center w-full h-full max-w-7xl">
             
             <!-- Default Welcome Display -->
-            <div id="symbolWelcome" class="flex flex-col items-center justify-center text-center space-y-4 sm:space-y-6 md:space-y-8 text-slate-500">
-                <div class="flex space-x-4 sm:space-x-8 md:space-x-12 text-5xl sm:text-7xl md:text-8xl lg:text-9xl opacity-90">
+            <div id="symbolWelcome" class="flex flex-col items-center justify-center text-center space-y-3 sm:space-y-6 md:space-y-8 text-slate-500">
+                <div class="flex space-x-3 sm:space-x-8 md:space-x-12 text-4xl sm:text-7xl md:text-8xl lg:text-9xl opacity-90">
                     <span class="glow-o hover:scale-110 transition-transform">⭕</span>
                     <span class="glow-x hover:scale-110 transition-transform">❌</span>
                     <span class="glow-heart animate-pulse hover:scale-110 transition-transform">❤️</span>
                 </div>
-                <p class="text-sm sm:text-xl md:text-2xl lg:text-3xl font-semibold text-slate-300 px-4 leading-relaxed max-w-3xl">
+                <p class="text-xs sm:text-lg md:text-2xl lg:text-3xl font-semibold text-slate-300 px-2 leading-relaxed max-w-3xl">
                     하단 버튼이나 키보드/터치로 전광판을 작동해보세요!
                 </p>
             </div>
@@ -162,29 +171,29 @@
         </div>
     </main>
 
-    <!-- Responsive Bottom Control Bar (Mobile, Tablet, Desktop) -->
-    <footer id="bottomControlBar" class="relative z-20 p-3 sm:p-5 md:p-6 lg:p-8 bg-slate-900/85 backdrop-blur-xl border-t border-slate-800/90 shrink-0">
-        <div class="max-w-3xl md:max-w-4xl lg:max-w-5xl mx-auto grid grid-cols-3 gap-2.5 sm:gap-4 md:gap-6 lg:gap-8">
+    <!-- Responsive Bottom Control Bar with Safe Area Support -->
+    <footer id="bottomControlBar" class="relative z-20 px-2.5 pt-2.5 sm:p-4 md:p-6 bg-slate-900/85 backdrop-blur-xl border-t border-slate-800/90 shrink-0">
+        <div class="max-w-3xl md:max-w-4xl lg:max-w-5xl mx-auto grid grid-cols-3 gap-2 sm:gap-4 md:gap-6">
             
             <!-- O Button -->
-            <button id="btnO" class="btn-compact group relative flex flex-col items-center justify-center py-3 sm:py-5 md:py-6 lg:py-8 px-2 sm:px-4 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-b from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 active:scale-95 shadow-lg shadow-blue-900/50 border border-blue-400/30 transition-all duration-150">
+            <button id="btnO" class="btn-compact group relative flex flex-col items-center justify-center py-2.5 sm:py-4 md:py-6 px-1.5 sm:px-4 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-b from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 active:scale-95 shadow-lg shadow-blue-900/50 border border-blue-400/30 transition-all duration-150 touch-manipulation">
                 <div class="absolute inset-0 rounded-xl sm:rounded-2xl md:rounded-3xl bg-blue-400/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <span class="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white drop-shadow-md transition-transform group-hover:scale-110">⭕</span>
-                <span class="mt-1 sm:mt-1.5 text-[11px] sm:text-xs md:text-sm lg:text-base font-bold text-blue-100 tracking-wider">O (정답)</span>
+                <span class="text-2xl sm:text-4xl md:text-6xl font-black text-white drop-shadow-md transition-transform group-hover:scale-110">⭕</span>
+                <span class="mt-1 text-[10px] sm:text-xs md:text-sm font-bold text-blue-100 tracking-wider">O (정답)</span>
             </button>
 
             <!-- X Button -->
-            <button id="btnX" class="btn-compact group relative flex flex-col items-center justify-center py-3 sm:py-5 md:py-6 lg:py-8 px-2 sm:px-4 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-b from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 active:scale-95 shadow-lg shadow-red-900/50 border border-red-400/30 transition-all duration-150">
+            <button id="btnX" class="btn-compact group relative flex flex-col items-center justify-center py-2.5 sm:py-4 md:py-6 px-1.5 sm:px-4 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-b from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 active:scale-95 shadow-lg shadow-red-900/50 border border-red-400/30 transition-all duration-150 touch-manipulation">
                 <div class="absolute inset-0 rounded-xl sm:rounded-2xl md:rounded-3xl bg-red-400/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <span class="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white drop-shadow-md transition-transform group-hover:scale-110">❌</span>
-                <span class="mt-1 sm:mt-1.5 text-[11px] sm:text-xs md:text-sm lg:text-base font-bold text-red-100 tracking-wider">X (오답)</span>
+                <span class="text-2xl sm:text-4xl md:text-6xl font-black text-white drop-shadow-md transition-transform group-hover:scale-110">❌</span>
+                <span class="mt-1 text-[10px] sm:text-xs md:text-sm font-bold text-red-100 tracking-wider">X (오답)</span>
             </button>
 
             <!-- Heart Button (Padlet Sound Connected) -->
-            <button id="btnHeart" class="btn-compact group relative flex flex-col items-center justify-center py-3 sm:py-5 md:py-6 lg:py-8 px-2 sm:px-4 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-b from-pink-500 via-rose-600 to-purple-700 hover:from-pink-400 hover:to-purple-600 active:scale-95 shadow-lg shadow-pink-600/50 border border-pink-300/40 transition-all duration-150">
+            <button id="btnHeart" class="btn-compact group relative flex flex-col items-center justify-center py-2.5 sm:py-4 md:py-6 px-1.5 sm:px-4 rounded-xl sm:rounded-2xl md:rounded-3xl bg-gradient-to-b from-pink-500 via-rose-600 to-purple-700 hover:from-pink-400 hover:to-purple-600 active:scale-95 shadow-lg shadow-pink-600/50 border border-pink-300/40 transition-all duration-150 touch-manipulation">
                 <div class="absolute inset-0 rounded-xl sm:rounded-2xl md:rounded-3xl bg-pink-300/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <span class="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white drop-shadow-md transition-transform group-hover:scale-125 animate-pulse">❤️</span>
-                <span class="mt-1 sm:mt-1.5 text-[11px] sm:text-xs md:text-sm lg:text-base font-bold text-pink-100 tracking-wider">예쁜 하트</span>
+                <span class="text-2xl sm:text-4xl md:text-6xl font-black text-white drop-shadow-md transition-transform group-hover:scale-125 animate-pulse">❤️</span>
+                <span class="mt-1 text-[10px] sm:text-xs md:text-sm font-bold text-pink-100 tracking-wider">예쁜 하트</span>
             </button>
 
         </div>
